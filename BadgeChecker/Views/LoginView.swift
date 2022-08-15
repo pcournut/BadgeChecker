@@ -7,37 +7,45 @@
 
 import SwiftUI
 import Foundation
+import iPhoneNumberField
 
 class LoginInfo: ObservableObject {
-    @Published var token : String = ""
-    @Published var userID : String = ""
     @Published var userFirstName: String = ""
-    @Published var userLastName: String = ""
+    @Published var token: String = ""
+    @Published var user_id: String = ""
+    @Published var expires: Int = 0
 }
 
-struct LoginResponse: Codable {
-    var token : String
-    var user_id : String
+struct SendResult: Codable {
+    var status: String?
+    var statusCode: String?
+}
+
+struct VerifyResponse: Codable {
     var userFirstName: String
-    var userLastName: String
+    var token: String
+    var user_id: String
+    var expires: Int
 }
 
-struct LoginResult: Codable {
-    var status: String
-    var response: LoginResponse
+struct VerifyResult: Codable {
+    var status: String?
+    var statusCode: String?
+    var response: VerifyResponse?
 }
 
 struct LoginView: View {
     
-    @State private var email: String = "axel.duheme@gmail.com"
-    @State private var password: String = "3121acb5a9f2529798dcf0af24d4409"
+    @State private var phoneNumber: String = ""
+    @State private var numberString: String?
+    @State private var countryCode: String?
+    @State private var code: String = ""
+    @State private var isShowingPhoneNumber: Bool = true
+    @State private var isShowingCode: Bool = false
     @State private var isShowingEventInitView: Bool = false
     @State private var isShowingAlert: Bool = false
+    @State private var token: String = ""
     
-    @AppStorage("token") private var token = ""
-    @AppStorage("userID") private var userID = ""
-    @AppStorage("userFirstName") private var userFirstName = ""
-    @AppStorage("userLastName") private var userLastName = ""
     @StateObject var loginInfo = LoginInfo()
     
     init() {
@@ -50,20 +58,12 @@ struct LoginView: View {
         // TODO: find a way to make this work
         UILabel.appearance().font = UIFont.preferredFont(forTextStyle: UIFont.TextStyle(rawValue: "Courrier"))
         
-        if !token.isEmpty && !userID.isEmpty && !userFirstName.isEmpty && !userLastName.isEmpty {
-            loginInfo.token = token
-            loginInfo.userID = userID
-            loginInfo.userFirstName = userFirstName
-            loginInfo.userLastName = userLastName
-            isShowingEventInitView = true
-        }
-        
     }
     
-
     var body : some View {
         
         VStack {
+            
             Image("Kento - text - selection")
                 .resizable()
                 .scaledToFit()
@@ -73,55 +73,107 @@ struct LoginView: View {
                 ZStack {
                     VStack(spacing: 30) {
                         
+                        
                         Image("Kento - sun")
                             .resizable()
                             .frame(width: 150.0, height: 150.0, alignment: .top)
                         
-                        Text("Email")
-                            .font(.title2)
-                            .foregroundColor(Color("KentoRed"))
-                        TextField("Enter email", text: $email)
-                            .disableAutocorrection(true)
-                            .foregroundColor(Color("KentoBeige"))
-                            .autocapitalization(.none)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 350, height: 40)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
+                        if isShowingPhoneNumber {
+                            
+                            iPhoneNumberField(text: $phoneNumber)
+                                .flagHidden(false)
+                                .flagSelectable(true)
+                                .prefixHidden(false)
+                                .defaultRegion("FR")
+                                .autofillPrefix(true)
+                                .onNumberChange { phoneNumber in
+                                    if phoneNumber != nil {
+                                        numberString = String(phoneNumber!.nationalNumber)
+                                        countryCode = "+" + String(phoneNumber!.countryCode)
+                                    } else {
+                                        numberString = nil
+                                        countryCode = nil
+                                    }
+                                }
+                                .font(UIFont(size: 22, weight: .light, design: .monospaced))
+                                .foregroundColor(Color("KentoRed"))
+                                .clearButtonMode(.always)
+                                .padding()
+                                .accentColor(Color("KentoRed"))
+                                .background(Color("KentoBlueGrey"))
+                                .cornerRadius(10)
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: 380)
+                                
+                            
+                            if countryCode != nil && numberString != nil {
+                                Button("Send code") {
+                                    self.isShowingPhoneNumber = false
+                                    self.isShowingCode = true
+                                    sendCode(phoneCountryCode: countryCode!, phoneNumber: numberString!) { result in
+                                        switch result {
+                                        case .success(_):
+                                            self.isShowingPhoneNumber = false
+                                            self.isShowingCode = true
+                                        case .failure(_):
+                                            self.isShowingAlert = true
+                                        }
+                                    }
+                                }
+                                .font(.title3)
+                                .foregroundColor(Color("KentoBlueGrey"))
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: 350)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                                .alert(isPresented: $isShowingAlert) {
+                                    Alert(title: Text("Wrong phone number"), message: Text("The phone number that you entered is wrong"), dismissButton: .default(Text("Got it!")))
+                                }
+                            }
+                            
+                        }
                         
-                        Text("Password")
-                            .font(.title2)
-                            .foregroundColor(Color("KentoRed"))
-                        SecureField("Enter password", text: $password)
-                            .disableAutocorrection(true)
-                            .foregroundColor(Color("KentoBeige"))
-                            .autocapitalization(.none)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 350, height: 40)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
+                        
+                        if isShowingCode {
+                            Text("Code")
+                                .font(.title2)
+                                .foregroundColor(Color("KentoRed"))
+                            SecureField("Enter code", text: $code)
+                                .disableAutocorrection(true)
+                                .foregroundColor(Color("KentoBeige"))
+                                .autocapitalization(.none)
+                                .multilineTextAlignment(.center)
+                                .frame(width: 350, height: 40)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
+
+                            Button("Verify code") {
+                                self.isShowingPhoneNumber = true
+                                self.isShowingCode = false
+                                self.isShowingEventInitView = true
+                                verifyCode(phoneCountryCode: countryCode!, phoneNumber: numberString!, code: code) { result in
+                                    switch result {
+                                    case .success(let response):
+                                        self.isShowingPhoneNumber = true
+                                        self.isShowingCode = false
+                                        self.isShowingEventInitView = response
+                                    case .failure(_):
+                                        self.isShowingAlert = true
+                                    }
+                                }
+                            }
+                            .font(.title3)
+                            .foregroundColor(Color("KentoBlueGrey"))
+                            .padding()
+                            .frame(minWidth: 0, maxWidth: 350)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                            .alert(isPresented: $isShowingAlert) {
+                                Alert(title: Text("Wrong phone number"), message: Text("The phone number that you entered is wrong"), dismissButton: .default(Text("Got it!")))
+                            }
+                        }
+                        
                             
                         
                         NavigationLink(destination: EventInitView(), isActive: $isShowingEventInitView) {
                             EmptyView()
-                        }
-                        
-                        Button("Login") {
-                            // TODO: login API call
-                            login(email: email, password: password) { result in
-                                switch result {
-                                case .success(let response):
-                                    self.isShowingEventInitView = response
-                                case .failure(_):
-                                    self.isShowingAlert = true
-                                }
-                            }
-                        }
-                        .font(.title3)
-                        .foregroundColor(Color("KentoBlueGrey"))
-                        .padding()
-                        .frame(minWidth: 0, maxWidth: 350)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
-                        .alert(isPresented: $isShowingAlert) {
-                            Alert(title: Text("Wrong Credentials"), message: Text("The username and/or password that you entered is wrong"), dismissButton: .default(Text("Got it!")))
                         }
                         
                         Spacer()
@@ -142,57 +194,113 @@ struct LoginView: View {
         
     }
     
-    func login(email: String, password: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func sendCode(phoneCountryCode: String, phoneNumber: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         enum JSONDecodingError: Error {
             case failed
         }
-
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/Login"
+        
+        enum WrongNumberError: Error {
+            case failed
+        }
+        
+        // TODO: max attempt reached (more than 5 times) error
+        
+        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessSendCode"
         let parameters = [
-          [
-            "key": "email",
-            "value": email,
-            "type": "text"
-          ],
-          [
-            "key": "password",
-            "value": password,
-            "type": "text"
-          ]] as [[String : Any]]
+            ["key": "phoneCountryCode",
+             "value": phoneCountryCode,
+             "type": "text"],
+            ["key": "phoneNumber",
+             "value": phoneNumber,
+             "type": "text"]
+        ]
         let request = multipartRequest(urlString: urlString, parameters: parameters)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if error == nil {
                 guard
                     let dataJSON = data,
-                    let loginResult = try? JSONDecoder().decode(LoginResult.self, from: dataJSON)
+                    let sendCodeResult = try? JSONDecoder().decode(SendResult.self, from: dataJSON)
                 else {
                     print(response.debugDescription)
                     completion(.failure(JSONDecodingError.failed))
                     return
                 }
-                // TODO: populate loginInfo
-                DispatchQueue.main.async {
-                    // Persistent data
-                    token = loginResult.response.token
-                    userID = loginResult.response.user_id
-                    userFirstName = loginResult.response.userFirstName
-                    userLastName = loginResult.response.userLastName
-                    
-                    loginInfo.token = loginResult.response.token
-                    loginInfo.userID = loginResult.response.user_id
-                    loginInfo.userFirstName = loginResult.response.userFirstName
-                    loginInfo.userLastName = loginResult.response.userLastName
+                
+                if sendCodeResult.status != nil {
+                    completion(.success(true))
+                } else {
+                    print(response.debugDescription)
+                    completion(.failure(WrongNumberError.failed))
                 }
-                completion(.success(true))
             } else {
                 if let error = error {
                     completion(.failure((error)))
                 }
             }
         }.resume()
-
+        
+        
     }
+    
+    func verifyCode(phoneCountryCode: String, phoneNumber: String, code: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        enum JSONDecodingError: Error {
+            case failed
+        }
+        enum WrongCodeError: Error {
+            case failed
+        }
+        
+        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessVerifyCode"
+        let parameters = [
+            ["key": "phoneCountryCode",
+             "value": phoneCountryCode,
+             "type": "text"],
+            ["key": "phoneNumber",
+             "value": phoneNumber,
+             "type": "text"],
+            ["key": "code",
+             "value": code,
+             "type": "text"]
+        ]
+        let request = multipartRequest(urlString: urlString, parameters: parameters)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if error == nil {
+                guard
+                    let dataJSON = data,
+                    let verifyCodeResult = try? JSONDecoder().decode(VerifyResult.self, from: dataJSON)
+                else {
+                    print(response.debugDescription)
+                    completion(.failure(JSONDecodingError.failed))
+                    return
+                }
+                
+                if verifyCodeResult.status != nil {
+                    DispatchQueue.main.async {
+                        loginInfo.userFirstName = verifyCodeResult.response!.userFirstName
+                        loginInfo.user_id = verifyCodeResult.response!.user_id
+                        loginInfo.token = verifyCodeResult.response!.token
+                        loginInfo.expires = verifyCodeResult.response!.expires
+                        
+                    }
+                    completion(.success(true))
+                } else {
+                    print(response.debugDescription)
+                    completion(.failure(WrongCodeError.failed))
+                }
+                
+            } else {
+                if let error = error {
+                    print(response.debugDescription)
+                    completion(.failure((error)))
+                }
+            }
+        }.resume()
+        
+        
+    }
+    
     
 }
 

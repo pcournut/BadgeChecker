@@ -9,6 +9,24 @@
           "revision": "c27a66149b7483fe42e2ec6aad61d5c3fffe522d",
           "version": "2.1.1"
         }
+      },
+      {
+        "package": "iPhoneNumberField",
+        "repositoryURL": "https://github.com/MojtabaHs/iPhoneNumberField.git",
+        "state": {
+          "branch": null,
+          "revision": "08140a73b6923f07df313fbc71034c70d431a5c9",
+          "version": "0.10.0"
+        }
+      },
+      {
+        "package": "PhoneNumberKit",
+        "repositoryURL": "https://github.com/marmelroy/PhoneNumberKit",
+        "state": {
+          "branch": null,
+          "revision": "104a53d62c55aa5794faf30b29ccad319653b552",
+          "version": "3.4.5"
+        }
       }
     ]
   },

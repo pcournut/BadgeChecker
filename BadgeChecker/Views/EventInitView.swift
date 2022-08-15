@@ -27,17 +27,6 @@ func ??<T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
     )
 }
 
-struct Location : Codable {
-    var name: String
-    var id: String
-    var eventID: String?
-    
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "EventId"
-        case name = "Name"
-        case id = "_id"
-    }
-}
 
 struct Organisation : Codable {
     var id: String
@@ -57,6 +46,18 @@ struct Event : Codable {
     }
 }
 
+struct ScanLocation : Codable {
+    var name: String
+    var id: String
+    var eventID: String?
+    
+    private enum CodingKeys: String, CodingKey {
+        case eventID = "EventId"
+        case name = "Name"
+        case id = "_id"
+    }
+}
+
 struct Badge: Codable {
     var name: String
     
@@ -67,9 +68,11 @@ struct Badge: Codable {
 
 struct ScanTerminal: Codable {
     var id: String
+    var volunteerName: String
     
     private enum CodingKeys: String, CodingKey {
         case id = "_id"
+        case volunteerName = "VolunteerName"
     }
 }
 
@@ -77,7 +80,7 @@ struct EventInitResponse: Codable {
     var orgIds: [String]?
     var orgNames: [String]?
     var events: [Event]?
-    var scanLocations: [Location]?
+    var scanLocations: [ScanLocation]?
     var badges: [Badge]?
     var scanTerminal: ScanTerminal?
 }
@@ -96,7 +99,7 @@ struct EventInitView: View {
     @State var orgNames: [String]?
     @State var orgs: [Organisation]?
     @State var events: [Event]?
-    @State var scanLocations: [Location]?
+    @State var scanLocations: [ScanLocation]?
     @State var badges: [Badge]?
     @StateObject var scanTerminal = ScanTerminalObservable()
     @State private var isShowingQRScanView: Bool = false
@@ -286,6 +289,8 @@ struct EventInitView: View {
               ])
         }
         let request = multipartRequest(urlString: urlString, parameters: parameters, token: loginInfo.token)
+        print("token", loginInfo.token)
+        print("parameters", parameters)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if error == nil {
@@ -323,7 +328,7 @@ struct EventInitView: View {
                     }
                     if eventInitResult.response.scanTerminal != nil {
                         scanTerminal.id = eventInitResult.response.scanTerminal!.id
-                        scanTerminal.volunteerName = volunteerName
+                        scanTerminal.volunteerName = eventInitResult.response.scanTerminal!.volunteerName
                         isShowingQRScanView = true
                     }
                 }

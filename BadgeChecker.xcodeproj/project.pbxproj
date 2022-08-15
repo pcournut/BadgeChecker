@@ -15,6 +15,7 @@
 		46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D62813EE7A000E5812 /* EventInitView.swift */; };
 		46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D82813EEA0000E5812 /* QRScanView.swift */; };
 		46A865BB281D10930075C38C /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A865BA281D10930075C38C /* Requests.swift */; };
+		46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */ = {isa = PBXBuildFile; productRef = 46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */,
+				46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +114,7 @@
 			name = BadgeChecker;
 			packageProductDependencies = (
 				463CFB6D27F99D8D0032C8E7 /* CodeScanner */,
+				46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */,
 			);
 			productName = BadgeChecker;
 			productReference = 463CFB5B27F998730032C8E7 /* BadgeChecker.app */;
@@ -143,6 +146,7 @@
 			mainGroup = 463CFB5227F998720032C8E7;
 			packageReferences = (
 				463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */,
+				46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */,
 			);
 			productRefGroup = 463CFB5C27F998730032C8E7 /* Products */;
 			projectDirPath = "";
@@ -391,6 +395,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MojtabaHs/iPhoneNumberField.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -398,6 +410,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
+		};
+		46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */;
+			productName = iPhoneNumberField;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
