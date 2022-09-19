@@ -10,10 +10,10 @@ import Foundation
 import iPhoneNumberField
 
 class LoginInfo: ObservableObject {
-    @Published var userFirstName: String = ""
-    @Published var token: String = ""
-    @Published var user_id: String = ""
-    @Published var expires: Int = 0
+    @Published var userFirstName: String = UserDefaults.standard.string(forKey: "userFirstName") ?? ""
+    @Published var token: String = UserDefaults.standard.string(forKey: "token") ?? ""
+    @Published var user_id: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
+    @Published var expires: Date = UserDefaults.standard.object(forKey: "expires") as? Date ?? Date.now
 }
 
 struct SendResult: Codable {
@@ -34,6 +34,12 @@ struct VerifyResult: Codable {
     var response: VerifyResponse?
 }
 
+struct NotTwilioResult: Codable {
+    var status: String?
+    var statusCode: String?
+    var response: VerifyResponse?
+}
+
 struct LoginView: View {
     
     @State private var phoneNumber: String = ""
@@ -44,7 +50,6 @@ struct LoginView: View {
     @State private var isShowingCode: Bool = false
     @State private var isShowingEventInitView: Bool = false
     @State private var isShowingAlert: Bool = false
-    @State private var token: String = ""
     
     @StateObject var loginInfo = LoginInfo()
     
@@ -64,10 +69,23 @@ struct LoginView: View {
         
         VStack {
             
-            Image("Kento - text - selection")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 75.0, height: 75.0, alignment: .center)
+            ZStack() {
+                Image("Kento - text - selection")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 75.0, height: 75.0, alignment: .center)
+                
+                Image(systemName: "person.crop.circle.badge.xmark")
+                    .foregroundColor(Color("KentoRed"))
+                    .font(.system(size: 25))
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .onTapGesture {
+                        loginInfo.expires = Date.now
+                        isShowingEventInitView = false
+                    }
+            }
+            
             
             NavigationView {
                 ZStack {
@@ -108,8 +126,6 @@ struct LoginView: View {
                             
                             if countryCode != nil && numberString != nil {
                                 Button("Send code") {
-                                    self.isShowingPhoneNumber = false
-                                    self.isShowingCode = true
                                     sendCode(phoneCountryCode: countryCode!, phoneNumber: numberString!) { result in
                                         switch result {
                                         case .success(_):
@@ -128,6 +144,28 @@ struct LoginView: View {
                                 .alert(isPresented: $isShowingAlert) {
                                     Alert(title: Text("Wrong phone number"), message: Text("The phone number that you entered is wrong"), dismissButton: .default(Text("Got it!")))
                                 }
+                                
+                                Button("Direct login [dev]") {
+                                    loginNoTwilio(phoneCountryCode: countryCode!, phoneNumber: numberString!) { result in
+                                        switch result {
+                                        case .success(_):
+                                            self.isShowingPhoneNumber = true
+                                            self.isShowingCode = false
+                                            self.isShowingEventInitView = true
+                                        case .failure(_):
+                                            self.isShowingAlert = true
+                                        }
+                                    }
+                                }
+                                .font(.title3)
+                                .foregroundColor(Color("KentoBlueGrey"))
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: 350)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                                .alert(isPresented: $isShowingAlert) {
+                                    Alert(title: Text("Wrong phone number"), message: Text("The phone number that you entered is wrong"), dismissButton: .default(Text("Got it!")))
+                                }
+                                
                             }
                             
                         }
@@ -146,9 +184,6 @@ struct LoginView: View {
                                 .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
 
                             Button("Verify code") {
-                                self.isShowingPhoneNumber = true
-                                self.isShowingCode = false
-                                self.isShowingEventInitView = true
                                 verifyCode(phoneCountryCode: countryCode!, phoneNumber: numberString!, code: code) { result in
                                     switch result {
                                     case .success(let response):
@@ -170,8 +205,6 @@ struct LoginView: View {
                             }
                         }
                         
-                            
-                        
                         NavigationLink(destination: EventInitView(), isActive: $isShowingEventInitView) {
                             EmptyView()
                         }
@@ -189,6 +222,9 @@ struct LoginView: View {
             .navigationBarHidden(true)
         }
         .background(Color("KentoBlueGrey"))
+        .onAppear() {
+            isShowingEventInitView = (Date.now < loginInfo.expires)
+        }
         
         
         
@@ -220,14 +256,14 @@ struct LoginView: View {
             if error == nil {
                 guard
                     let dataJSON = data,
-                    let sendCodeResult = try? JSONDecoder().decode(SendResult.self, from: dataJSON)
+                    let result = try? JSONDecoder().decode(SendResult.self, from: dataJSON)
                 else {
                     print(response.debugDescription)
                     completion(.failure(JSONDecodingError.failed))
                     return
                 }
                 
-                if sendCodeResult.status != nil {
+                if result.status != nil {
                     completion(.success(true))
                 } else {
                     print(response.debugDescription)
@@ -269,20 +305,24 @@ struct LoginView: View {
             if error == nil {
                 guard
                     let dataJSON = data,
-                    let verifyCodeResult = try? JSONDecoder().decode(VerifyResult.self, from: dataJSON)
+                    let result = try? JSONDecoder().decode(VerifyResult.self, from: dataJSON)
                 else {
                     print(response.debugDescription)
                     completion(.failure(JSONDecodingError.failed))
                     return
                 }
                 
-                if verifyCodeResult.status != nil {
+                if result.status != nil {
                     DispatchQueue.main.async {
-                        loginInfo.userFirstName = verifyCodeResult.response!.userFirstName
-                        loginInfo.user_id = verifyCodeResult.response!.user_id
-                        loginInfo.token = verifyCodeResult.response!.token
-                        loginInfo.expires = verifyCodeResult.response!.expires
+                        loginInfo.userFirstName = result.response!.userFirstName
+                        loginInfo.user_id = result.response!.user_id
+                        loginInfo.token = result.response!.token
+                        loginInfo.expires = Date.now.addingTimeInterval(TimeInterval(result.response!.expires))
                         
+                        UserDefaults.standard.set(loginInfo.userFirstName, forKey: "userFirstName")
+                        UserDefaults.standard.set(loginInfo.user_id, forKey: "user_id")
+                        UserDefaults.standard.set(loginInfo.token, forKey: "token")
+                        UserDefaults.standard.set(loginInfo.expires, forKey: "expires")
                     }
                     completion(.success(true))
                 } else {
@@ -297,6 +337,70 @@ struct LoginView: View {
                 }
             }
         }.resume()
+        
+        
+    }
+    
+    func loginNoTwilio(phoneCountryCode: String, phoneNumber: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        enum JSONDecodingError: Error {
+            case failed
+        }
+        
+        enum WrongNumberError: Error {
+            case failed
+        }
+        
+        // TODO: max attempt reached (more than 5 times) error
+        
+        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessVerifyCodeNOTWILIO"
+        let parameters = [
+            ["key": "phoneCountryCode",
+             "value": phoneCountryCode,
+             "type": "text"],
+            ["key": "phoneNumber",
+             "value": phoneNumber,
+             "type": "text"]
+        ]
+        let request = multipartRequest(urlString: urlString, parameters: parameters)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if error == nil {
+                guard
+                    let dataJSON = data,
+                    let result = try? JSONDecoder().decode(NotTwilioResult.self, from: dataJSON)
+                else {
+                    print(response.debugDescription)
+                    completion(.failure(JSONDecodingError.failed))
+                    return
+                }
+                
+                if result.status != nil {
+                    DispatchQueue.main.async {
+                        loginInfo.userFirstName = result.response!.userFirstName
+                        loginInfo.user_id = result.response!.user_id
+                        loginInfo.token = result.response!.token
+                        loginInfo.expires = Date.now.addingTimeInterval(TimeInterval(result.response!.expires))
+                        
+                        UserDefaults.standard.set(loginInfo.userFirstName, forKey: "userFirstName")
+                        UserDefaults.standard.set(loginInfo.user_id, forKey: "user_id")
+                        UserDefaults.standard.set(loginInfo.token, forKey: "token")
+                        UserDefaults.standard.set(loginInfo.expires, forKey: "expires")
+                        
+                    }
+                    completion(.success(true))
+                } else {
+                    print(response.debugDescription)
+                    completion(.failure(WrongNumberError.failed))
+                }
+                
+            } else {
+                if let error = error {
+                    print(response.debugDescription)
+                    completion(.failure((error)))
+                }
+            }
+        }.resume()
+        
         
         
     }

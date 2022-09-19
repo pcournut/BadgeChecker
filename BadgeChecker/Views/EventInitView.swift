@@ -8,9 +8,9 @@
 import SwiftUI
 import Foundation
 
-class ScanTerminalObservable: ObservableObject {
-    @Published var id : String = ""
-    @Published var volunteerName: String = ""
+class ScanInfo: ObservableObject {
+    @Published var scanTerminal: ScanTerminal?
+    @Published var badges: [Badge]?
 }
 
 extension String {
@@ -69,10 +69,12 @@ struct Badge: Codable {
 struct ScanTerminal: Codable {
     var id: String
     var volunteerName: String
+    var scanLocationId: String
     
     private enum CodingKeys: String, CodingKey {
         case id = "_id"
         case volunteerName = "VolunteerName"
+        case scanLocationId = "ScanLocation"
     }
 }
 
@@ -100,9 +102,9 @@ struct EventInitView: View {
     @State var orgs: [Organisation]?
     @State var events: [Event]?
     @State var scanLocations: [ScanLocation]?
-    @State var badges: [Badge]?
-    @StateObject var scanTerminal = ScanTerminalObservable()
     @State private var isShowingQRScanView: Bool = false
+
+    @StateObject var scanInfo = ScanInfo()
     
     var body : some View {
         
@@ -169,9 +171,35 @@ struct EventInitView: View {
                             }
                                 
                         } else {
-                            Text("Selected organisation: \(orgNames![0])")
-                                .font(.title3)
-                                .foregroundColor(Color("KentoRed"))
+                            HStack {
+                                VStack{
+                                    Text("Organisation: ")
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                    Text("\(orgNames![0])")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoBlueGrey"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                
+                                Image(systemName: "xmark")
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .font(.system(size: 20))
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .onTapGesture {
+                                        title = "organisation"
+                                        orgIds = nil
+                                        orgNames = nil
+                                        events = nil
+                                        scanLocations = nil
+                                    }
+                            
+                            }
+                            .frame(maxWidth: 350)
+                            
                         }
 
                     }
@@ -199,21 +227,51 @@ struct EventInitView: View {
                                 .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                             }
                         } else {
-                            Text("Selected event: \(events![0].name)")
-                                .font(.title3)
-                                .foregroundColor(Color("KentoRed"))
-                            if events![0].mainPicture != nil {
-                                let imageURLString = "https://\(events![0].mainPicture!.deletingPrefix("//"))"
-                                AsyncImage(url: URL(string: imageURLString)) { image in
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-
-                                } placeholder: {
-                                    ProgressView()
+                            HStack {
+                                VStack {
+                                    Text("Event: ")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text("\(events![0].name)")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoBlueGrey"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                .frame(width: 200, height: 200)
+                                
+                                Image(systemName: "xmark")
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .font(.system(size: 20))
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .onTapGesture {
+                                        title = "event"
+                                        events = nil
+                                        scanLocations = nil
+                                        eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
+                                            switch result {
+                                            case .success(_):
+                                                return
+                                            case .failure(let error):
+                                                print("error: \(error)")
+                                            }
+                                        }
+                                    }
                             }
+                            .frame(maxWidth: 350)
+                            
+//                            if events![0].mainPicture != nil {
+//                                let imageURLString = "https://\(events![0].mainPicture!.deletingPrefix("//"))"
+//                                AsyncImage(url: URL(string: imageURLString)) { image in
+//                                    image
+//                                        .resizable()
+//                                        .aspectRatio(contentMode: .fill)
+//
+//                                } placeholder: {
+//                                    ProgressView()
+//                                }
+//                                .frame(width: 200, height: 200)
+//                            }
                         }
                     }
                     
@@ -250,7 +308,7 @@ struct EventInitView: View {
         .navigationBarBackButtonHidden(true)
         .navigationBarTitle("")
         .navigationBarHidden(true)
-        .environmentObject(scanTerminal)
+        .environmentObject(scanInfo)
         .accentColor(Color("KentoRed"))
         
     }
@@ -324,11 +382,10 @@ struct EventInitView: View {
                         scanLocations = eventInitResult.response.scanLocations
                     }
                     if eventInitResult.response.badges != nil {
-                        badges = eventInitResult.response.badges
+                        scanInfo.badges = eventInitResult.response.badges
                     }
                     if eventInitResult.response.scanTerminal != nil {
-                        scanTerminal.id = eventInitResult.response.scanTerminal!.id
-                        scanTerminal.volunteerName = eventInitResult.response.scanTerminal!.volunteerName
+                        scanInfo.scanTerminal = eventInitResult.response.scanTerminal!
                         isShowingQRScanView = true
                     }
                 }

@@ -15,6 +15,7 @@
 		46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D62813EE7A000E5812 /* EventInitView.swift */; };
 		46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D82813EEA0000E5812 /* QRScanView.swift */; };
 		46A865BB281D10930075C38C /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A865BA281D10930075C38C /* Requests.swift */; };
+		46B0AD9B28D71FCA0001364F /* Popovers in Frameworks */ = {isa = PBXBuildFile; productRef = 46B0AD9A28D71FCA0001364F /* Popovers */; };
 		46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */ = {isa = PBXBuildFile; productRef = 46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				46B0AD9B28D71FCA0001364F /* Popovers in Frameworks */,
 				463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */,
 				46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */,
 			);
@@ -115,6 +117,7 @@
 			packageProductDependencies = (
 				463CFB6D27F99D8D0032C8E7 /* CodeScanner */,
 				46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */,
+				46B0AD9A28D71FCA0001364F /* Popovers */,
 			);
 			productName = BadgeChecker;
 			productReference = 463CFB5B27F998730032C8E7 /* BadgeChecker.app */;
@@ -147,6 +150,7 @@
 			packageReferences = (
 				463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */,
+				46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */,
 			);
 			productRefGroup = 463CFB5C27F998730032C8E7 /* Products */;
 			projectDirPath = "";
@@ -395,6 +399,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aheze/Popovers";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MojtabaHs/iPhoneNumberField.git";
@@ -410,6 +422,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
+		};
+		46B0AD9A28D71FCA0001364F /* Popovers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */;
+			productName = Popovers;
 		};
 		46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */ = {
 			isa = XCSwiftPackageProductDependency;
