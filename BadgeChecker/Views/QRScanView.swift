@@ -34,8 +34,8 @@ struct ScanWalletResult: Codable {
 }
 
 struct CheckByNameResponse: Codable {
-    var badgeNames: [String]
-    var debug: String
+    var badgeEntityIds: [String]?
+    var debug: String?
 }
 
 struct CheckByNameResult: Codable {
@@ -51,7 +51,7 @@ struct QRScanView: View {
     
     @State var scannedUserId: String? = nil
     @State var badgeEntities: [BadgeEntity]?
-    @State var badgeNames: [String]?
+    @State var badgeEntityIds: [String]?
     @State var debug: String = ""
     @State var isPresentingScanner = false
     @State var successScan = false
@@ -81,7 +81,7 @@ struct QRScanView: View {
                                     .padding(30)
                                     .hoverEffect(.lift)
 
-                                if (badgeEntities != nil && badgeEntities!.isEmpty) || (badgeNames != nil && badgeNames!.isEmpty) {
+                                if (badgeEntities != nil && badgeEntities!.isEmpty) || (badgeEntityIds != nil && badgeEntityIds!.isEmpty) {
                                     Image(systemName: "text.badge.xmark")
                                         .foregroundColor(.red)
                                         .font(.system(size: 60))
@@ -142,7 +142,7 @@ struct QRScanView: View {
                                     .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
                                 if firstName.count > 0 && lastName.count > 0 {
                                     Button("Check list") {
-                                        checkParticipantByName(firstName: firstName, lastName: lastName, scannableBadge: scanInfo.badges!, scanTerminal: scanInfo.scanTerminal!.id) { result in
+                                        checkParticipantByName(firstName: firstName, lastName: lastName, scanTerminal: scanInfo.scanTerminal!.id, scanLocation: scanInfo.scanTerminal!.scanLocationId) { result in
                                             switch result {
                                             case .success(_):
                                                 successScan = true
@@ -275,22 +275,13 @@ struct QRScanView: View {
         
     }
     
-    func checkParticipantByName(firstName: String, lastName: String, scannableBadge: [Badge], scanTerminal: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+    func checkParticipantByName(firstName: String, lastName: String, scanTerminal: String, scanLocation: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         enum JSONDecodingError: Error {
             case failed
         }
         
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/CheckParticipantByName"
-        var badgeNamesString = ""
-        for badge in scannableBadge {
-            badgeNamesString += badge.name
-        }
+        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/ScanWallet"
         let parameters = [
-          [
-            "key": "badgeNames",
-            "value": badgeNamesString,
-            "type": "text"
-          ],
           [
             "key": "firstName",
             "value": firstName,
@@ -305,7 +296,13 @@ struct QRScanView: View {
             "key": "scanTerminal",
             "value": scanTerminal,
             "type": "text"
-          ]] as [[String : Any]]
+          ],
+          [
+            "key": "scanLocation",
+            "value": scanLocation,
+            "type": "text"
+          ]
+        ] as [[String : Any]]
         let request = multipartRequest(urlString: urlString, parameters: parameters, token: loginInfo.token)
         URLSession.shared.dataTask(with: request) { data, response, error in
             if error == nil {
@@ -321,8 +318,10 @@ struct QRScanView: View {
                 DispatchQueue.main.async {
                     print("dispatch")
                     print(dataString)
-                    badgeNames = result.response?.badgeNames
-                    debug = result.response!.debug
+                    badgeEntityIds = result.response!.badgeEntityIds
+                    if result.response!.debug != nil {
+                        debug = result.response!.debug!
+                    }
                 }
                 print("success")
                 completion(.success(true))

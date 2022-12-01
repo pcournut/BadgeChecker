@@ -60,9 +60,11 @@ struct ScanLocation : Codable {
 
 struct Badge: Codable {
     var name: String
+    var icon: String
     
     private enum CodingKeys: String, CodingKey {
         case name = "Name"
+        case icon = "Icon"
     }
 }
 
@@ -95,14 +97,17 @@ struct EventInitResult: Codable {
 struct EventInitView: View {
     
     @EnvironmentObject var loginInfo: LoginInfo
-    @State var title = "organisation"
+    @State var title = "volunteer"
     @State var volunteerName = ""
     @State var orgIds: [String]?
     @State var orgNames: [String]?
     @State var orgs: [Organisation]?
     @State var events: [Event]?
     @State var scanLocations: [ScanLocation]?
-    @State private var isShowingQRScanView: Bool = false
+    
+    @State var showVolunteerField = true
+    
+    @State private var isShowingQRScanView = false
 
     @StateObject var scanInfo = ScanInfo()
     
@@ -115,70 +120,17 @@ struct EventInitView: View {
                         EmptyView()
                     }
                     
-                    TextField("Volunteer name", text: $volunteerName)
-                        .disableAutocorrection(true)
-                        .foregroundColor(Color("KentoBeige"))
-                        .multilineTextAlignment(.center)
-                        .frame(width: 350, height: 40)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
-                        .padding()
-                    
-                    // Fetch orgnisations
-                    if orgIds == nil  {
-                        if events == nil && scanLocations == nil && !volunteerName.isEmpty {
-                            Button("Fetch organisations") {
-                                eventInit(volunteerName: volunteerName) { result in
-                                    switch result {
-                                    case .success(_):
-                                        return
-                                    case .failure(let error):
-                                        print("error: \(error)")
-                                    }
-                                    // TODO: handle case where the is no organisation
-                                }
-                            }
-                            .font(.title3)
-                            .foregroundColor(Color("KentoBlueGrey"))
-                            .padding()
-                            .frame(minWidth: 0, maxWidth: 350)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
-                        }
-                    } else {
-                        // Organisation selection
-                        if orgIds!.count > 1 {
-                            ForEach(orgIds!, id: \.self) { orgId in
-                                let index = orgIds!.firstIndex(of: orgId)
-                                let orgName = orgNames![index!]
-                                Button("\(orgName)"){
-                                    orgIds = [orgId]
-                                    orgNames = [orgName]
-                                    // Fetch events
-                                    eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
-                                        switch result {
-                                        case .success(_):
-                                            return
-                                        case .failure(let error):
-                                            print("error: \(error)")
-                                        }
-                                        // TODO: handle case where the is no events
-                                    }
-                                }
-                                .font(.title3)
-                                .foregroundColor(Color("KentoBlueGrey"))
-                                .padding()
-                                .frame(minWidth: 0, maxWidth: 350)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
-                            }
-                                
-                        } else {
+                    // Selected fields stack
+                    VStack {
+                        if !showVolunteerField {
                             HStack {
                                 VStack{
-                                    Text("Organisation: ")
+                                    Text("Volunteer: ")
                                     .font(.title3)
                                     .foregroundColor(Color("KentoRedFont"))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     
-                                    Text("\(orgNames![0])")
+                                    Text("\(volunteerName)")
                                         .font(.title3)
                                         .foregroundColor(Color("KentoBlueGrey"))
                                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -190,7 +142,9 @@ struct EventInitView: View {
                                     .padding(10)
                                     .frame(maxWidth: .infinity, alignment: .trailing)
                                     .onTapGesture {
-                                        title = "organisation"
+                                        title = "volunteer"
+                                        volunteerName = ""
+                                        showVolunteerField = true
                                         orgIds = nil
                                         orgNames = nil
                                         events = nil
@@ -199,25 +153,131 @@ struct EventInitView: View {
                             
                             }
                             .frame(maxWidth: 350)
-                            
                         }
-
+                        
+                        if orgIds != nil {
+                            if orgIds!.count == 1 {
+                                HStack {
+                                    VStack{
+                                        Text("Organisation: ")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        
+                                        Text("\(orgNames![0])")
+                                            .font(.title3)
+                                            .foregroundColor(Color("KentoBlueGrey"))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    
+                                    Image(systemName: "xmark")
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .font(.system(size: 20))
+                                        .padding(10)
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .onTapGesture {
+                                            title = "organisation"
+                                            orgIds = nil
+                                            orgNames = nil
+                                            events = nil
+                                            scanLocations = nil
+                                        }
+                                
+                                }
+                                .frame(maxWidth: 350)
+                            } else if orgIds!.count == 0 {
+                                HStack{
+                                    Text("No organisation found.")
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .frame(width: 350)
+                            }
+                        }
+                        
+                        if events != nil {
+                            if events!.count == 1 {
+                                HStack {
+                                    VStack {
+                                        Text("Event: ")
+                                            .font(.title3)
+                                            .foregroundColor(Color("KentoRedFont"))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        Text("\(events![0].name)")
+                                            .font(.title3)
+                                            .foregroundColor(Color("KentoBlueGrey"))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    
+                                    Image(systemName: "xmark")
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .font(.system(size: 20))
+                                        .padding(10)
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .onTapGesture {
+                                            title = "event"
+                                            events = nil
+                                            scanLocations = nil
+                                            eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
+                                                switch result {
+                                                case .success(_):
+                                                    return
+                                                case .failure(let error):
+                                                    print("error: \(error)")
+                                                }
+                                            }
+                                        }
+                                }
+                                .frame(maxWidth: 350)
+                            } else if events!.count == 0 {
+                                HStack{
+                                    Text("No event found.")
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .frame(width: 350)
+                            }
+                        }
+                        
+                        if scanLocations != nil && scanLocations!.count == 0 {
+                            HStack{
+                                Text("No scan location found.")
+                                .font(.title3)
+                                .foregroundColor(Color("KentoRedFont"))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(width: 350)
+                        }
                     }
-                
-                    // Event selection
-                    if events != nil {
-                        if events!.count > 1 {
-                            ForEach(events!, id: \.id) { event in
-                                Button("\(event.name)"){
-                                    events = [event]
-                                    // Fetch scan locations
-                                    eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: event.id) { result in
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    
+                    
+                    VStack {
+                        if showVolunteerField {
+                            TextField("Volunteer name", text: $volunteerName)
+                                .disableAutocorrection(true)
+                                .foregroundColor(Color("KentoBeige"))
+                                .multilineTextAlignment(.center)
+                                .frame(width: 350, height: 40)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
+                                .padding()
+                        }
+                        
+                        // Fetch orgnisations
+                        if orgIds == nil  {
+                            if events == nil && scanLocations == nil && !volunteerName.isEmpty {
+                                Button("Fetch organisations") {
+                                    eventInit(volunteerName: volunteerName) { result in
                                         switch result {
                                         case .success(_):
+                                            showVolunteerField = false
                                             return
                                         case .failure(let error):
                                             print("error: \(error)")
                                         }
+                                        // TODO: handle case where the is no organisation
                                     }
                                 }
                                 .font(.title3)
@@ -227,28 +287,43 @@ struct EventInitView: View {
                                 .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                             }
                         } else {
-                            HStack {
-                                VStack {
-                                    Text("Event: ")
-                                        .font(.title3)
-                                        .foregroundColor(Color("KentoRedFont"))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text("\(events![0].name)")
-                                        .font(.title3)
-                                        .foregroundColor(Color("KentoBlueGrey"))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                
-                                Image(systemName: "xmark")
-                                    .foregroundColor(Color("KentoRedFont"))
-                                    .font(.system(size: 20))
-                                    .padding(10)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                                    .onTapGesture {
-                                        title = "event"
-                                        events = nil
-                                        scanLocations = nil
+                            // Organisation selection
+                            if orgIds!.count > 1 {
+                                ForEach(orgIds!, id: \.self) { orgId in
+                                    let index = orgIds!.firstIndex(of: orgId)
+                                    let orgName = orgNames![index!]
+                                    Button("\(orgName)"){
+                                        orgIds = [orgId]
+                                        orgNames = [orgName]
+                                        // Fetch events
                                         eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
+                                            switch result {
+                                            case .success(_):
+                                                return
+                                            case .failure(let error):
+                                                print("error: \(error)")
+                                            }
+                                            // TODO: handle case where the is no events
+                                        }
+                                    }
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                    .padding()
+                                    .frame(minWidth: 0, maxWidth: 350)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                                }
+                            }
+
+                        }
+                    
+                        // Event selection
+                        if events != nil {
+                            if events!.count > 1 {
+                                ForEach(events!, id: \.id) { event in
+                                    Button("\(event.name)"){
+                                        events = [event]
+                                        // Fetch scan locations
+                                        eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: event.id) { result in
                                             switch result {
                                             case .success(_):
                                                 return
@@ -257,51 +332,43 @@ struct EventInitView: View {
                                             }
                                         }
                                     }
-                            }
-                            .frame(maxWidth: 350)
-                            
-//                            if events![0].mainPicture != nil {
-//                                let imageURLString = "https://\(events![0].mainPicture!.deletingPrefix("//"))"
-//                                AsyncImage(url: URL(string: imageURLString)) { image in
-//                                    image
-//                                        .resizable()
-//                                        .aspectRatio(contentMode: .fill)
-//
-//                                } placeholder: {
-//                                    ProgressView()
-//                                }
-//                                .frame(width: 200, height: 200)
-//                            }
-                        }
-                    }
-                    
-                    // Scan location selection
-                    if scanLocations != nil && !volunteerName.isEmpty {
-                        ForEach(scanLocations!, id: \.id) { scanLocation in
-                            
-                            Button("\(scanLocation.name)"){
-                                eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: events![0].id, scanLocationId: scanLocation.id) { result in
-                                    switch result {
-                                    case .success(_):
-                                        return
-                                    case .failure(let error):
-                                        print("Error: \(error)")
-                                    }
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                    .padding()
+                                    .frame(minWidth: 0, maxWidth: 350)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                                 }
                             }
-                            .font(.title3)
-                            .foregroundColor(Color("KentoBlueGrey"))
-                            .padding()
-                            .frame(minWidth: 0, maxWidth: 350)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                        }
+                        
+                        // Scan location selection
+                        if scanLocations != nil && !volunteerName.isEmpty {
+                            ForEach(scanLocations!, id: \.id) { scanLocation in
+                                
+                                Button("\(scanLocation.name)"){
+                                    eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: events![0].id, scanLocationId: scanLocation.id) { result in
+                                        switch result {
+                                        case .success(_):
+                                            return
+                                        case .failure(let error):
+                                            print("Error: \(error)")
+                                        }
+                                    }
+                                }
+                                .font(.title3)
+                                .foregroundColor(Color("KentoBlueGrey"))
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: 350)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                            }
                         }
                     }
-                    
+                    .frame(maxHeight: .infinity, alignment: .bottom)
                     
                 }
                 .navigationTitle(Text("Select \(title)"))
             }
-            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .center)
             .background(Color("KentoBeige").edgesIgnoringSafeArea(.all))
             
         }
@@ -358,26 +425,25 @@ struct EventInitView: View {
                     let eventInitResult = try? JSONDecoder().decode(EventInitResult.self, from: data!)
                 else {
                     print(response.debugDescription)
-                    let dataString = String(data: data!, encoding: .utf8)
-                    print(dataString)
+                    _ = String(data: data!, encoding: .utf8)
                     completion(.failure(JSONDecodingError.failed))
                     return
                 }
                 DispatchQueue.main.async {
                     // Debug
                     print("\(dataString)")
-                    if eventInitResult.response.orgIds != nil && eventInitResult.response.orgIds!.count > 0 {
+                    if eventInitResult.response.orgIds != nil {
                         title = "organisation"
                         orgIds = eventInitResult.response.orgIds
                     }
-                    if eventInitResult.response.orgNames != nil && eventInitResult.response.orgNames!.count > 0 {
+                    if eventInitResult.response.orgNames != nil {
                         orgNames = eventInitResult.response.orgNames
                     }
-                    if eventInitResult.response.events != nil && eventInitResult.response.events!.count > 0 {
+                    if eventInitResult.response.events != nil {
                         title = "event"
                         events = eventInitResult.response.events
                     }
-                    if eventInitResult.response.scanLocations != nil && eventInitResult.response.scanLocations!.count > 0 {
+                    if eventInitResult.response.scanLocations != nil {
                         title = "location"
                         scanLocations = eventInitResult.response.scanLocations
                     }
