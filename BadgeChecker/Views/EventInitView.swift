@@ -8,369 +8,295 @@
 import SwiftUI
 import Foundation
 
-class ScanInfo: ObservableObject {
-    @Published var scanTerminal: ScanTerminal?
-    @Published var badges: [Badge]?
-}
 
-extension String {
-    func deletingPrefix(_ prefix: String) -> String {
-        guard self.hasPrefix(prefix) else { return self }
-        return String(self.dropFirst(prefix.count))
-    }
-}
+struct MultipleSelectionRow: View {
+    var title: String
+    var isSelected: Bool
+    var action: () -> Void
 
-func ??<T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
-    Binding(
-        get: { lhs.wrappedValue ?? rhs },
-        set: { lhs.wrappedValue = $0 }
-    )
-}
-
-
-struct Organisation : Codable {
-    var id: String
-    var name: String?
-}
-
-struct Event : Codable {
-    var id: String
-    var name: String
-    var mainPicture: String?
-    
-    private enum CodingKeys: String, CodingKey {
-        case id = "_id"
+    var body: some View {
+        Button(action: self.action) {
+            HStack {
+                Text(self.title)
+                if self.isSelected {
+                    Spacer()
+                    Image(systemName: "checkmark")
+                }
+            }
+        }
+        .font(.title3)
+        .foregroundColor(Color("KentoBlueGrey"))
+        .padding()
+        .frame(minWidth: 0, maxWidth: 350)
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
         
-        case name
-        case mainPicture
     }
-}
-
-struct ScanLocation : Codable {
-    var name: String
-    var id: String
-    var eventID: String?
     
-    private enum CodingKeys: String, CodingKey {
-        case eventID = "EventId"
-        case name = "Name"
-        case id = "_id"
-    }
-}
 
-struct Badge: Codable {
-    var name: String
-    var icon: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case name = "Name"
-        case icon = "Icon"
-    }
-}
-
-struct ScanTerminal: Codable {
-    var id: String
-    var volunteerName: String
-    var scanLocationId: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case id = "_id"
-        case volunteerName = "VolunteerName"
-        case scanLocationId = "ScanLocation"
-    }
-}
-
-struct EventInitResponse: Codable {
-    var orgIds: [String]?
-    var orgNames: [String]?
-    var events: [Event]?
-    var scanLocations: [ScanLocation]?
-    var badges: [Badge]?
-    var scanTerminal: ScanTerminal?
-}
-
-struct EventInitResult: Codable {
-    var status: String
-    var response: EventInitResponse
 }
 
 struct EventInitView: View {
     
+    // Environment variables
     @EnvironmentObject var loginInfo: LoginInfo
-    @State var title = "volunteer"
-    @State var volunteerName = ""
-    @State var orgIds: [String]?
-    @State var orgNames: [String]?
-    @State var orgs: [Organisation]?
-    @State var events: [Event]?
-    @State var scanLocations: [ScanLocation]?
-    
-    @State var showVolunteerField = true
-    
-    @State private var isShowingQRScanView = false
-
     @StateObject var scanInfo = ScanInfo()
+    
+    // View model
+    @ObservedObject var viewModel = EventInitViewModel()
     
     var body : some View {
         
         NavigationView {
             ZStack {
                 VStack {
-                    NavigationLink(destination: QRScanView(), isActive: $isShowingQRScanView) {
+                    NavigationLink(destination: QRScanView(), isActive: $viewModel.isShowingQRScanView) {
                         EmptyView()
                     }
                     
-                    // Selected fields stack
+                    // Selected variables stack
                     VStack {
-                        if !showVolunteerField {
+                        if viewModel.selectedOrg != nil {
                             HStack {
                                 VStack{
-                                    Text("Volunteer: ")
-                                    .font(.title3)
-                                    .foregroundColor(Color("KentoRedFont"))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    Text("Organisation: ")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     
-                                    Text("\(volunteerName)")
+                                    Text("\(viewModel.selectedOrg!.name)")
                                         .font(.title3)
                                         .foregroundColor(Color("KentoBlueGrey"))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                
                                 Image(systemName: "xmark")
                                     .foregroundColor(Color("KentoRedFont"))
                                     .font(.system(size: 20))
                                     .padding(10)
                                     .frame(maxWidth: .infinity, alignment: .trailing)
                                     .onTapGesture {
-                                        title = "volunteer"
-                                        volunteerName = ""
-                                        showVolunteerField = true
-                                        orgIds = nil
-                                        orgNames = nil
-                                        events = nil
-                                        scanLocations = nil
+                                        viewModel.title = "organisation"
+                                        viewModel.selectedOrg = nil
+                                        viewModel.selectedEvent = nil
+                                        viewModel.selectedBadges = []
+                                        viewModel.selectedBadgesIds = []
+                                        viewModel.orgs = nil
+                                        viewModel.events = nil
+                                        viewModel.badges = nil
                                     }
-                            
+                                
                             }
                             .frame(maxWidth: 350)
-                        }
-                        
-                        if orgIds != nil {
-                            if orgIds!.count == 1 {
-                                HStack {
-                                    VStack{
-                                        Text("Organisation: ")
-                                        .font(.title3)
-                                        .foregroundColor(Color("KentoRedFont"))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        
-                                        Text("\(orgNames![0])")
-                                            .font(.title3)
-                                            .foregroundColor(Color("KentoBlueGrey"))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                    }
-                                    
-                                    Image(systemName: "xmark")
-                                        .foregroundColor(Color("KentoRedFont"))
-                                        .font(.system(size: 20))
-                                        .padding(10)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                        .onTapGesture {
-                                            title = "organisation"
-                                            orgIds = nil
-                                            orgNames = nil
-                                            events = nil
-                                            scanLocations = nil
-                                        }
-                                
-                                }
-                                .frame(maxWidth: 350)
-                            } else if orgIds!.count == 0 {
-                                HStack{
-                                    Text("No organisation found.")
+                        } else if viewModel.orgs != nil && viewModel.orgs!.count == 0 {
+                            HStack{
+                                Text("No organisation were found associated to your profile.")
                                     .font(.title3)
                                     .foregroundColor(Color("KentoRedFont"))
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .frame(width: 350)
                             }
+                            .frame(width: 350)
                         }
                         
-                        if events != nil {
-                            if events!.count == 1 {
-                                HStack {
+                        if viewModel.selectedEvent != nil {
+                            HStack {
+                                VStack{
+                                    Text("Event: ")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                    Text("\(viewModel.selectedEvent!.name)")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoBlueGrey"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                Image(systemName: "xmark")
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .font(.system(size: 20))
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .onTapGesture {
+                                        viewModel.title = "event"
+                                        viewModel.selectedEvent = nil
+                                        viewModel.selectedBadges = []
+                                        viewModel.selectedBadgesIds = []
+                                        viewModel.badges = nil
+                                    }
+                                
+                            }
+                            .frame(maxWidth: 350)
+                        } else if viewModel.events != nil && viewModel.events!.count == 0 {
+                            HStack{
+                                Text("No future event was found associated to this organisation.")
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoRedFont"))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(width: 350)
+                        }
+                        
+                        if viewModel.badges != nil {
+                            HStack {
+                                if viewModel.badges!.count == 0 {
+                                    Text("No badge was found associated to this event.")
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                } else {
                                     VStack {
-                                        Text("Event: ")
+                                        Text("Badges: ")
                                             .font(.title3)
                                             .foregroundColor(Color("KentoRedFont"))
                                             .frame(maxWidth: .infinity, alignment: .leading)
-                                        Text("\(events![0].name)")
-                                            .font(.title3)
-                                            .foregroundColor(Color("KentoBlueGrey"))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        if viewModel.selectedBadges.count == 0 {
+                                            Text("Select at least one badge to Scan.")
+                                                .font(.title3)
+                                                .foregroundColor(Color("KentoBlueGrey"))
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                        }
                                     }
-                                    
-                                    Image(systemName: "xmark")
-                                        .foregroundColor(Color("KentoRedFont"))
-                                        .font(.system(size: 20))
-                                        .padding(10)
-                                        .frame(maxWidth: .infinity, alignment: .trailing)
-                                        .onTapGesture {
-                                            title = "event"
-                                            events = nil
-                                            scanLocations = nil
-                                            eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
+                                }
+                            }
+                            .frame(width: 350)
+                        }
+                            
+                    }
+                    
+                    // Selection stack
+                    VStack {
+                        
+                        if viewModel.selectedOrg == nil {
+                            if viewModel.selectedOrg != nil {
+                                // Select organisation
+                                if viewModel.orgs!.count > 1 {
+                                    ForEach(viewModel.orgs!, id: \.id) { org in
+                                        Button("\(org.name)"){
+                                            // Fetch events
+                                            viewModel.selectedOrg = org
+                                            viewModel.eventInit(orgId: org.id) { result in
                                                 switch result {
                                                 case .success(_):
+                                                    DispatchQueue.main.async {
+                                                        scanInfo.scanTerminal = viewModel.scanTerminal
+                                                        print("Scan terminal setup: \(viewModel.scanTerminal)")
+                                                    }
                                                     return
                                                 case .failure(let error):
                                                     print("error: \(error)")
                                                 }
                                             }
                                         }
-                                }
-                                .frame(maxWidth: 350)
-                            } else if events!.count == 0 {
-                                HStack{
-                                    Text("No event found.")
-                                    .font(.title3)
-                                    .foregroundColor(Color("KentoRedFont"))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .frame(width: 350)
-                            }
-                        }
-                        
-                        if scanLocations != nil && scanLocations!.count == 0 {
-                            HStack{
-                                Text("No scan location found.")
-                                .font(.title3)
-                                .foregroundColor(Color("KentoRedFont"))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .frame(width: 350)
-                        }
-                    }
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    
-                    
-                    VStack {
-                        if showVolunteerField {
-                            TextField("Volunteer name", text: $volunteerName)
-                                .disableAutocorrection(true)
-                                .foregroundColor(Color("KentoBeige"))
-                                .multilineTextAlignment(.center)
-                                .frame(width: 350, height: 40)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
-                                .padding()
-                        }
-                        
-                        // Fetch orgnisations
-                        if orgIds == nil  {
-                            if events == nil && scanLocations == nil && !volunteerName.isEmpty {
-                                Button("Fetch organisations") {
-                                    eventInit(volunteerName: volunteerName) { result in
-                                        switch result {
-                                        case .success(_):
-                                            showVolunteerField = false
-                                            return
-                                        case .failure(let error):
-                                            print("error: \(error)")
-                                        }
-                                        // TODO: handle case where the is no organisation
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoBlueGrey"))
+                                        .padding()
+                                        .frame(minWidth: 0, maxWidth: 350)
+                                        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                                     }
                                 }
-                                .font(.title3)
-                                .foregroundColor(Color("KentoBlueGrey"))
-                                .padding()
-                                .frame(minWidth: 0, maxWidth: 350)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                             }
-                        } else {
-                            // Organisation selection
-                            if orgIds!.count > 1 {
-                                ForEach(orgIds!, id: \.self) { orgId in
-                                    let index = orgIds!.firstIndex(of: orgId)
-                                    let orgName = orgNames![index!]
-                                    Button("\(orgName)"){
-                                        orgIds = [orgId]
-                                        orgNames = [orgName]
-                                        // Fetch events
-                                        eventInit(volunteerName: volunteerName, orgId: orgIds) { result in
-                                            switch result {
-                                            case .success(_):
-                                                return
-                                            case .failure(let error):
-                                                print("error: \(error)")
+                        }
+                        
+                        // Select event
+                        if viewModel.selectedEvent == nil {
+                            if viewModel.events != nil {
+                                if viewModel.events!.count > 1 {
+                                    ForEach(viewModel.events!, id: \.id) { event in
+                                        Button("\(event.name)"){
+                                            viewModel.selectedEvent = event
+                                            viewModel.eventInit(eventId: event.id) { result in
+                                                switch result {
+                                                case .success(_):
+                                                    DispatchQueue.main.async {
+                                                        scanInfo.scanTerminal = viewModel.scanTerminal
+                                                        print("Scan terminal setup: \(viewModel.scanTerminal)")
+                                                    }
+                                                    return
+                                                case .failure(let error):
+                                                    print("error: \(error)")
+                                                }
                                             }
-                                            // TODO: handle case where the is no events
                                         }
+                                        .font(.title3)
+                                        .foregroundColor(Color("KentoBlueGrey"))
+                                        .padding()
+                                        .frame(minWidth: 0, maxWidth: 350)
+                                        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                                     }
-                                    .font(.title3)
-                                    .foregroundColor(Color("KentoBlueGrey"))
-                                    .padding()
-                                    .frame(minWidth: 0, maxWidth: 350)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                                 }
                             }
-
                         }
-                    
-                        // Event selection
-                        if events != nil {
-                            if events!.count > 1 {
-                                ForEach(events!, id: \.id) { event in
-                                    Button("\(event.name)"){
-                                        events = [event]
-                                        // Fetch scan locations
-                                        eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: event.id) { result in
-                                            switch result {
-                                            case .success(_):
-                                                return
-                                            case .failure(let error):
-                                                print("error: \(error)")
+                        
+                        // Select badges
+                        if viewModel.badges != nil {
+                            if viewModel.badges!.count > 1 {
+                                List {
+                                    ForEach(viewModel.badges!, id: \.id) { badge in
+                                        MultipleSelectionRow(title: badge.name, isSelected: viewModel.selectedBadgesIds.contains(badge.id)) {
+                                            if viewModel.selectedBadgesIds.contains(badge.id) {
+                                                viewModel.selectedBadges.removeAll(where: { $0 == badge })
+                                                viewModel.selectedBadgesIds.removeAll(where: { $0 == badge.id })
+                                            }
+                                            else {
+                                                viewModel.selectedBadges.append(badge)
+                                                viewModel.selectedBadgesIds.append(badge.id)
                                             }
                                         }
                                     }
-                                    .font(.title3)
-                                    .foregroundColor(Color("KentoBlueGrey"))
-                                    .padding()
-                                    .frame(minWidth: 0, maxWidth: 350)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                                    .listRowBackground(Color("KentoBeige"))
                                 }
-                            }
-                        }
-                        
-                        // Scan location selection
-                        if scanLocations != nil && !volunteerName.isEmpty {
-                            ForEach(scanLocations!, id: \.id) { scanLocation in
+                                .listStyle(.plain)
+                                .background(Color("KentoBeige"))
                                 
-                                Button("\(scanLocation.name)"){
-                                    eventInit(volunteerName: volunteerName, orgId: orgIds, eventId: events![0].id, scanLocationId: scanLocation.id) { result in
-                                        switch result {
-                                        case .success(_):
-                                            return
-                                        case .failure(let error):
-                                            print("Error: \(error)")
+                                if viewModel.selectedBadges.count > 0 {
+                                    Button("Confirm"){
+                                        viewModel.selectedBadge(badgeIds: viewModel.selectedBadgesIds) { result in
+                                            switch result {
+                                            case .success(_):
+                                                if viewModel.participantsAndBadges.count > 0 {
+                                                    scanInfo.badges = viewModel.selectedBadges
+                                                    scanInfo.participantsAndBadges = viewModel.participantsAndBadges
+                                                    viewModel.isShowingQRScanView = true
+                                                } else {
+                                                    viewModel.selectedBadges = []
+                                                    viewModel.selectedBadgesIds = []
+                                                    HStack{
+                                                        Text("No partipcant was found associated to those badges.")
+                                                            .font(.title3)
+                                                            .foregroundColor(Color("KentoRedFont"))
+                                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                                    }
+                                                    .frame(width: 350)
+                                                }
+                                                return
+                                            case .failure(let error):
+                                                print("error: \(error)")
+                                            }
                                         }
                                     }
+                                    .font(.title3)
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                    .padding()
+                                    .frame(minWidth: 0, maxWidth: 350)
+                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoGreen")))
                                 }
-                                .font(.title3)
-                                .foregroundColor(Color("KentoBlueGrey"))
-                                .padding()
-                                .frame(minWidth: 0, maxWidth: 350)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
+                                
                             }
                         }
+                        
                     }
                     .frame(maxHeight: .infinity, alignment: .bottom)
                     
                 }
-                .navigationTitle(Text("Select \(title)"))
+                .navigationTitle(Text("Select \(viewModel.title)"))
+            
+                
             }
             .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .center)
             .background(Color("KentoBeige").edgesIgnoringSafeArea(.all))
             
+        }
+        // Fetch organisations at init
+        .onAppear {
+            viewModel.setupTokenFetchOrgs(token: loginInfo.token)
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitle("")
@@ -378,90 +304,6 @@ struct EventInitView: View {
         .environmentObject(scanInfo)
         .accentColor(Color("KentoRed"))
         
-    }
-    
-    func eventInit(volunteerName: String, orgId: [String]?=nil, eventId:String?=nil, scanLocationId: String?=nil, completion: @escaping (Result<Bool, Error>) -> Void) {
-        enum JSONDecodingError: Error {
-            case failed
-        }
-        
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/kentoEventInit"
-        var parameters = [
-          [
-            "key": "volunteerName",
-            "value": "\(volunteerName)",
-            "type": "text"
-          ]] as [[String : Any]]
-        if orgId != nil {
-            parameters.append([
-                "key": "orgId",
-                "value": "\(orgId![0])",
-                "type": "text"
-              ])
-        }
-        if eventId != nil {
-            parameters.append([
-                "key": "eventId",
-                "value": "\(eventId!)",
-                "type": "text"
-              ])
-        }
-        if scanLocationId != nil {
-            parameters.append([
-                "key": "scanLocationId",
-                "value": "\(scanLocationId!)",
-                "type": "text"
-              ])
-        }
-        let request = multipartRequest(urlString: urlString, parameters: parameters, token: loginInfo.token)
-        print("token", loginInfo.token)
-        print("parameters", parameters)
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if error == nil {
-                guard
-                    // Debug
-                    let dataString = String(data: data!, encoding: .utf8),
-                    let eventInitResult = try? JSONDecoder().decode(EventInitResult.self, from: data!)
-                else {
-                    print(response.debugDescription)
-                    _ = String(data: data!, encoding: .utf8)
-                    completion(.failure(JSONDecodingError.failed))
-                    return
-                }
-                DispatchQueue.main.async {
-                    // Debug
-                    print("\(dataString)")
-                    if eventInitResult.response.orgIds != nil {
-                        title = "organisation"
-                        orgIds = eventInitResult.response.orgIds
-                    }
-                    if eventInitResult.response.orgNames != nil {
-                        orgNames = eventInitResult.response.orgNames
-                    }
-                    if eventInitResult.response.events != nil {
-                        title = "event"
-                        events = eventInitResult.response.events
-                    }
-                    if eventInitResult.response.scanLocations != nil {
-                        title = "location"
-                        scanLocations = eventInitResult.response.scanLocations
-                    }
-                    if eventInitResult.response.badges != nil {
-                        scanInfo.badges = eventInitResult.response.badges
-                    }
-                    if eventInitResult.response.scanTerminal != nil {
-                        scanInfo.scanTerminal = eventInitResult.response.scanTerminal!
-                        isShowingQRScanView = true
-                    }
-                }
-                completion(.success(true))
-            } else {
-                if let error = error {
-                    completion(.failure(error))
-                }
-            }
-        }.resume()
     }
     
 }

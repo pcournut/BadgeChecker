@@ -7,10 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		460166292946778500E82163 /* EventInitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460166282946778500E82163 /* EventInitViewModel.swift */; };
+		4601662B29467EE600E82163 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4601662A29467EE600E82163 /* LoginViewModel.swift */; };
+		4601662D294682D300E82163 /* QRScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4601662C294682D300E82163 /* QRScanViewModel.swift */; };
 		463CFB5F27F998730032C8E7 /* BadgeCheckerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */; };
 		463CFB6327F998740032C8E7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 463CFB6227F998740032C8E7 /* Assets.xcassets */; };
 		463CFB6627F998740032C8E7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 463CFB6527F998740032C8E7 /* Preview Assets.xcassets */; };
 		463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 463CFB6D27F99D8D0032C8E7 /* CodeScanner */; };
+		4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */ = {isa = PBXBuildFile; productRef = 4699CE7029560BFF006A1D9D /* ShowTime */; };
 		46A175D42813EE21000E5812 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D32813EE21000E5812 /* LoginView.swift */; };
 		46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D62813EE7A000E5812 /* EventInitView.swift */; };
 		46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D82813EEA0000E5812 /* QRScanView.swift */; };
@@ -20,6 +24,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		460166282946778500E82163 /* EventInitViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInitViewModel.swift; sourceTree = "<group>"; };
+		4601662A29467EE600E82163 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		4601662C294682D300E82163 /* QRScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanViewModel.swift; sourceTree = "<group>"; };
 		463CFB5B27F998730032C8E7 /* BadgeChecker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BadgeChecker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCheckerApp.swift; sourceTree = "<group>"; };
 		463CFB6227F998740032C8E7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -35,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */,
 				46B0AD9B28D71FCA0001364F /* Popovers in Frameworks */,
 				463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */,
 				46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */,
@@ -44,6 +52,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		460166272946774A00E82163 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				460166282946778500E82163 /* EventInitViewModel.swift */,
+				4601662C294682D300E82163 /* QRScanViewModel.swift */,
+				4601662A29467EE600E82163 /* LoginViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		463CFB5227F998720032C8E7 = {
 			isa = PBXGroup;
 			children = (
@@ -63,6 +81,7 @@
 		463CFB5D27F998730032C8E7 /* BadgeChecker */ = {
 			isa = PBXGroup;
 			children = (
+				460166272946774A00E82163 /* ViewModels */,
 				46A865B9281D10800075C38C /* Services */,
 				46A175CF2813EDF6000E5812 /* Views */,
 				463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */,
@@ -118,6 +137,7 @@
 				463CFB6D27F99D8D0032C8E7 /* CodeScanner */,
 				46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */,
 				46B0AD9A28D71FCA0001364F /* Popovers */,
+				4699CE7029560BFF006A1D9D /* ShowTime */,
 			);
 			productName = BadgeChecker;
 			productReference = 463CFB5B27F998730032C8E7 /* BadgeChecker.app */;
@@ -151,6 +171,7 @@
 				463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */,
 				46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */,
+				4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */,
 			);
 			productRefGroup = 463CFB5C27F998730032C8E7 /* Products */;
 			projectDirPath = "";
@@ -182,7 +203,10 @@
 				46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */,
 				463CFB5F27F998730032C8E7 /* BadgeCheckerApp.swift in Sources */,
 				46A865BB281D10930075C38C /* Requests.swift in Sources */,
+				4601662D294682D300E82163 /* QRScanViewModel.swift in Sources */,
 				46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */,
+				460166292946778500E82163 /* EventInitViewModel.swift in Sources */,
+				4601662B29467EE600E82163 /* LoginViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -399,6 +423,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/KaneCheshire/ShowTime.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/aheze/Popovers";
@@ -422,6 +454,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
+		};
+		4699CE7029560BFF006A1D9D /* ShowTime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */;
+			productName = ShowTime;
 		};
 		46B0AD9A28D71FCA0001364F /* Popovers */ = {
 			isa = XCSwiftPackageProductDependency;

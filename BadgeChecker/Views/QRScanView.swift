@@ -7,59 +7,68 @@
 
 import SwiftUI
 import CodeScanner
-import Popovers
 
 func adaptivePresentationStyle(for controller: UIPresentationController, traitCollection: UITraitCollection) -> UIModalPresentationStyle {
     return .none
 }
 
-struct BadgeEntity: Codable {
-    var id: String
-    var parentBadgeId: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case id = "_id"
-        case parentBadgeId = "ParentBadge"
-    }
-}
-
-struct ScanWalletResponse: Codable {
-    var badgeEntities: [BadgeEntity]?
-}
-
-struct ScanWalletResult: Codable {
-    var status: String?
-    var statusCode: String?
-    var response: ScanWalletResponse?
-}
-
-struct CheckByNameResponse: Codable {
-    var badgeEntityIds: [String]?
-    var debug: String?
-}
-
-struct CheckByNameResult: Codable {
-    var status: String?
-    var statusCode: String?
-    var response: CheckByNameResponse?
-}
-
 struct QRScanView: View {
+    
     
     @EnvironmentObject var loginInfo: LoginInfo
     @EnvironmentObject var scanInfo: ScanInfo
     
-    @State var scannedUserId: String? = nil
-    @State var badgeEntities: [BadgeEntity]?
-    @State var badgeEntityIds: [String]?
-    @State var debug: String = ""
-    @State var isPresentingScanner = false
-    @State var successScan = false
-    @State var failScan = false
-    @State var isPresentingListArgs = false
-    @State var firstName: String = ""
-    @State var lastName: String = ""
-    @State var showPopover = false
+    @ObservedObject var viewModel = QRScanViewModel()
+    
+    func handleScan(result: Result<ScanResult, ScanError>) {
+        viewModel.isPresentingScanner = false
+        
+        switch result {
+        case .success(let result):
+            let scannedParticipantAllBadges = viewModel.participantAllBadgesList.filter { $0.userId == result.string }
+            
+            if scannedParticipantAllBadges.count == 1 {
+                viewModel.scannedFirstName = scannedParticipantAllBadges[0].firstName
+                viewModel.scannedLastName = scannedParticipantAllBadges[0].lastName
+                
+                let scannedUnusedBadges = scannedParticipantAllBadges[0].badges.filter { !$0.isUsed }
+                if scannedUnusedBadges.count == 0 {
+                    viewModel.alreadyValidatedKento = true
+                } else if scannedUnusedBadges.count == 1 {
+                    if let participantRow = viewModel.participantAllBadgesList.firstIndex(where: {$0.userId == result.string}) {
+                        if let badgeRow = viewModel.participantAllBadgesList[participantRow].badges.firstIndex(where: {!$0.isUsed}) {
+                            viewModel.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
+                            viewModel.scannedParticipantBadgeList.append(
+                                ParticipantScanInfo(
+                                    userId: viewModel.participantAllBadgesList[participantRow].userId,
+                                    firstName: viewModel.participantAllBadgesList[participantRow].firstName,
+                                    lastName: viewModel.participantAllBadgesList[participantRow].lastName,
+                                    badgeEntityId: viewModel.participantAllBadgesList[participantRow].badges[badgeRow].badgeEntityId,
+                                    badgeId: viewModel.participantAllBadgesList[participantRow].badges[badgeRow].badgeId, isUsed: true
+                                )
+                            )
+                        }
+ 
+                    }
+                    viewModel.validatedBadgesCount += 1
+                    viewModel.validatedKento = true
+                } else {
+                    viewModel.scannedParticipantAndUnusedBadges = ParticipantAllBadges(
+                        userId: scannedParticipantAllBadges[0].userId,
+                        firstName: scannedParticipantAllBadges[0].firstName,
+                        lastName: scannedParticipantAllBadges[0].lastName,
+                        badges: scannedUnusedBadges
+                    )
+                }
+            } else {
+                viewModel.notFoundKento = true
+            }
+
+        case .failure(let error):
+            viewModel.scanFailed = true
+            print("Scanning failed: \(error.localizedDescription)")
+        }
+    }
     
     var scannerSheet : some View {
         CodeScannerView(codeTypes: [.qr], completion: handleScan)
@@ -69,117 +78,224 @@ struct QRScanView: View {
         
         ZStack {
             VStack {
+                Text("\(viewModel.validatedBadgesCount) / \(viewModel.badgesCount) kentos scanned")
+                    .font(.title3)
+                    .foregroundColor(Color("KentoBlueGrey"))
+                Divider().frame(maxHeight: 30)
                 
-                GeometryReader { geometry in
-                    VStack(spacing: 0) {
-                        
-                        HStack {
-                            if successScan {
-                                Image(systemName: "person.fill.checkmark")
-                                    .foregroundColor(.green)
-                                    .font(.system(size: 60))
-                                    .padding(30)
-                                    .hoverEffect(.lift)
-
-                                if (badgeEntities != nil && badgeEntities!.isEmpty) || (badgeEntityIds != nil && badgeEntityIds!.isEmpty) {
-                                    Image(systemName: "text.badge.xmark")
-                                        .foregroundColor(.red)
-                                        .font(.system(size: 60))
-                                        .padding(30)
-
-                                } else {
-                                    Image(systemName: "text.badge.checkmark")
-                                        .foregroundColor(.green)
-                                        .font(.system(size: 60))
-                                        .padding(30)
-                                }
-                            }
-                            
-                            if failScan {
-                                Image(systemName: "person.fill.xmark")
-                                    .foregroundColor(.red)
-                                    .font(.system(size: 60))
-                                    .padding(30)
-                            }
-                                
-                        }
-                        .frame(height: geometry.size.width * 0.50, alignment: .top)
-                        .onTapGesture {
-                            showPopover = true
-                        }
-                        .popover(present: $showPopover,
-                                 attributes: {
-                                         $0.position = .absolute(
-                                             originAnchor: .center,
-                                             popoverAnchor: .center
-                                         )
-                                         $0.sourceFrameInset.top = -5
-                                     }) {
-                            Text(debug)
-                                .font(.title3)
-                                .padding()
-                                .frame(maxWidth: 350)
-                                .foregroundColor(Color("KentoBlueGrey"))
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
-                        }
-                        
-                    
+                // Display name of person scanned
+                HStack {
+                    if viewModel.scannedFirstName.count > 0  && viewModel.scannedLastName.count > 0 {
+                        Text("\(viewModel.scannedFirstName), \(viewModel.scannedLastName)")
+                            .foregroundColor(Color("KentoBlueGrey"))
+                            .font(.title2)
+                            .frame(minWidth: 0, maxWidth: 350, alignment: .leading)
+                    }
+                }
+                
+                if viewModel.scanFailed {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 30, weight: .regular))
+                        .foregroundColor(Color("KentoError"))
+                        .padding()
+                    Text("Scan failed")
+                        .font(.title3)
+                        .foregroundColor(Color("KentoError"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                if viewModel.notFoundKento {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 30, weight: .regular))
+                        .foregroundColor(Color("KentoError"))
+                        .padding()
+                    Text("The kento wasn't found")
+                        .font(.title3)
+                        .foregroundColor(Color("KentoError"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                if viewModel.alreadyValidatedKento {
+                    Image(systemName: "xmark.circle")
+                        .font(.system(size: 30, weight: .regular))
+                        .foregroundColor(Color("KentoError"))
+                        .padding()
+                    Text("Kento already validated")
+                        .font(.title3)
+                        .foregroundColor(Color("KentoError"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                if viewModel.validatedKento {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 30, weight: .regular))
+                        .foregroundColor(Color("KentoSuccess"))
+                        .padding()
+                    Text("Validated")
+                        .font(.title3)
+                        .foregroundColor(Color("KentoSuccess"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                if viewModel.scannedParticipantAndUnusedBadges != nil {
+                    if viewModel.scannedParticipantAndUnusedBadges!.badges.count > 1 {
                         VStack {
-                            if isPresentingListArgs {
-                                TextField("First name", text: $firstName)
-                                    .disableAutocorrection(true)
-                                    .foregroundColor(Color("KentoBeige"))
-                                    .autocapitalization(.none)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 350, height: 40)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
-                                TextField("Last name", text: $lastName)
-                                    .disableAutocorrection(true)
-                                    .foregroundColor(Color("KentoBeige"))
-                                    .autocapitalization(.none)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 350, height: 40)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
-                                if firstName.count > 0 && lastName.count > 0 {
-                                    Button("Check list") {
-                                        checkParticipantByName(firstName: firstName, lastName: lastName, scanTerminal: scanInfo.scanTerminal!.id, scanLocation: scanInfo.scanTerminal!.scanLocationId) { result in
-                                            switch result {
-                                            case .success(_):
-                                                successScan = true
-                                                failScan = false
-                                            case .failure(_):
-                                                successScan = false
-                                                failScan = true
+                            List {
+                                ForEach(viewModel.scannedParticipantAndUnusedBadges!.badges, id: \.badgeEntityId) { badge in
+                                    if let row = scanInfo.badges!.firstIndex(where: {$0.id == badge.badgeId}) {
+                                        MultipleSelectionRow(title: scanInfo.badges![row].name, isSelected: viewModel.selectedBadgeEntitiesIds.contains(badge.badgeEntityId)) {
+                                            if viewModel.selectedBadgeEntitiesIds.contains(badge.badgeEntityId) {
+                                                viewModel.selectedBadgeEntitiesIds.removeAll(where: { $0 == badge.badgeEntityId })
+                                            }
+                                            else {
+                                                viewModel.selectedBadgeEntitiesIds.append(badge.badgeEntityId)
                                             }
                                         }
                                     }
-                                    .font(.title3)
-                                    .foregroundColor(Color("KentoBlueGrey"))
-                                    .padding()
-                                    .frame(minWidth: 0, maxWidth: 350)
-                                    .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoRed")))
                                 }
+                                .listRowBackground(Color("KentoBeige"))
+                            }
+                            .listStyle(.plain)
+                            .background(Color("KentoBeige"))
+                            
+                            if viewModel.selectedBadgeEntitiesIds.count > 0 {
+                                Button("Confirm"){
+                                    for badgeEntityId in viewModel.selectedBadgeEntitiesIds {
+                                        if let participantRow = viewModel.participantAllBadgesList.firstIndex(where: {$0.userId == viewModel.scannedParticipantAndUnusedBadges!.userId}) {
+                                            if let badgeRow = viewModel.participantAllBadgesList[participantRow].badges.firstIndex(where: {$0.badgeEntityId == badgeEntityId}) {
+                                                viewModel.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
+                                                viewModel.scannedParticipantBadgeList.append(
+                                                    ParticipantScanInfo(
+                                                        userId: viewModel.participantAllBadgesList[participantRow].userId,
+                                                        firstName: viewModel.participantAllBadgesList[participantRow].firstName,
+                                                        lastName: viewModel.participantAllBadgesList[participantRow].lastName,
+                                                        badgeEntityId: viewModel.participantAllBadgesList[participantRow].badges[badgeRow].badgeEntityId,
+                                                        badgeId: viewModel.participantAllBadgesList[participantRow].badges[badgeRow].badgeId, isUsed: true
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+                                    viewModel.validatedBadgesCount += viewModel.selectedBadgeEntitiesIds.count
+                                    viewModel.validatedKento = true
+                                    viewModel.scannedParticipantAndUnusedBadges = nil
+                                }
+                                .font(.title3)
+                                .foregroundColor(Color("KentoBlueGrey"))
+                                .padding()
+                                .frame(minWidth: 0, maxWidth: 350)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoGreen")))
                             }
                         }
-                        .frame(height: geometry.size.width * 0.50, alignment: .top)
-                        .frame(maxWidth: .infinity, alignment: .center)
                         
                     }
                 }
                 
-                
+                if viewModel.isPresentingList {
+                    TextField("Search participants", text: $viewModel.name)
+                        .disableAutocorrection(true)
+                        .foregroundColor(Color("KentoBeige"))
+                        .autocapitalization(.none)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 350, height: 40)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color("KentoBlueGrey")))
                     
+                    if viewModel.name.count > 0 {
+                        List(0..<viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }.count, id: \.self) { i in
+                            HStack {
+                                Text("\(viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].lastName), \(viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].firstName)")
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                Text("\(viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].badges.filter { $0.isUsed }.count)/\(viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].badges.count)")
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                if viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].badges.filter { $0.isUsed }.count == viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].badges.count {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 15, weight: .regular))
+                                        .foregroundColor(Color("KentoSuccess"))
+                                        .frame(alignment: .trailing)
+                                } else if viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }[i].badges.filter { $0.isUsed }.count > 0 {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 15, weight: .regular))
+                                        .foregroundColor(Color("KentoWarning"))
+                                        .frame(alignment: .trailing)
+                                }
+                            }
+                            .listRowBackground(Color("KentoBeige"))
+                        }
+                        .listStyle(.plain)
+                        .background(Color("KentoBeige"))
+                    } else {
+                        List(0..<viewModel.participantAllBadgesList.count, id: \.self) { i in
+                            HStack {
+                                Text("\(viewModel.participantAllBadgesList[i].lastName), \(viewModel.participantAllBadgesList[i].firstName)")
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                Text("\(viewModel.participantAllBadgesList[i].badges.filter { $0.isUsed }.count)/\(viewModel.participantAllBadgesList[i].badges.count)")
+                                    .foregroundColor(Color("KentoBlueGrey"))
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                if viewModel.participantAllBadgesList[i].badges.filter { $0.isUsed }.count == viewModel.participantAllBadgesList[i].badges.count {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 15, weight: .regular))
+                                        .foregroundColor(Color("KentoSuccess"))
+                                        .frame(alignment: .trailing)
+                                } else if viewModel.participantAllBadgesList[i].badges.filter { $0.isUsed }.count > 0 {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 15, weight: .regular))
+                                        .foregroundColor(Color("KentoWarning"))
+                                        .frame(alignment: .trailing)
+                                }
+                            }
+                            .onTapGesture {
+                                viewModel.isPresentingList = false
+                                let scannedUnusedBadges = viewModel.participantAllBadgesList[i].badges.filter { !$0.isUsed }
+                                if scannedUnusedBadges.count == 1 {
+                                    viewModel.scannedFirstName = viewModel.participantAllBadgesList[i].firstName
+                                    viewModel.scannedLastName = viewModel.participantAllBadgesList[i].lastName
+                                    if let badgeRow = viewModel.participantAllBadgesList[i].badges.firstIndex(where: {!$0.isUsed}) {
+                                        viewModel.participantAllBadgesList[i].badges[badgeRow].isUsed = true
+                                        viewModel.scannedParticipantBadgeList.append(
+                                            ParticipantScanInfo(
+                                                userId: viewModel.participantAllBadgesList[i].userId,
+                                                firstName: viewModel.participantAllBadgesList[i].firstName,
+                                                lastName: viewModel.participantAllBadgesList[i].lastName,
+                                                badgeEntityId: viewModel.participantAllBadgesList[i].badges[badgeRow].badgeEntityId,
+                                                badgeId: viewModel.participantAllBadgesList[i].badges[badgeRow].badgeId, isUsed: true
+                                            )
+                                        )
+                                    }
+                                    viewModel.validatedBadgesCount += 1
+                                    viewModel.validatedKento = true
+                                } else if scannedUnusedBadges.count > 1 {
+                                    viewModel.scannedFirstName = viewModel.participantAllBadgesList[i].firstName
+                                    viewModel.scannedLastName = viewModel.participantAllBadgesList[i].lastName
+                                    viewModel.scannedParticipantAndUnusedBadges = ParticipantAllBadges(
+                                        userId: viewModel.participantAllBadgesList[i].userId,
+                                        firstName: viewModel.participantAllBadgesList[i].firstName,
+                                        lastName: viewModel.participantAllBadgesList[i].lastName,
+                                        badges: scannedUnusedBadges
+                                    )
+                                }
+                            }
+                            .listRowBackground(Color("KentoBeige"))
+                        }
+                        .listStyle(.plain)
+                        .background(Color("KentoBeige"))
+                    }
+                    
+                }
                 
                 GeometryReader { geometry in
                     HStack(spacing: 0) {
                         Button {
-                            isPresentingScanner = true
-                            isPresentingListArgs = false
+                            viewModel.scannedFirstName = ""
+                            viewModel.scannedLastName = ""
+                            viewModel.scanFailed = false
+                            viewModel.isPresentingScanner = true
+                            viewModel.isPresentingList = false
+                            viewModel.scannedParticipantAndUnusedBadges = nil
+                            viewModel.validatedKento = false
+                            viewModel.alreadyValidatedKento = false
+                            viewModel.notFoundKento = false
                         } label: {
                             Label("Scan", systemImage: "qrcode.viewfinder")
                                 .font(.title2)
                         }
-                        .sheet(isPresented: $isPresentingScanner) {
+                        .sheet(isPresented: $viewModel.isPresentingScanner) {
                             self.scannerSheet
                         }
                         .frame(width: geometry.size.width * 0.50, alignment: .center)
@@ -187,7 +303,15 @@ struct QRScanView: View {
                         Divider()
                         
                         Button {
-                            isPresentingListArgs = true
+                            viewModel.scannedFirstName = ""
+                            viewModel.scannedLastName = ""
+                            viewModel.scanFailed = false
+                            viewModel.isPresentingScanner = false
+                            viewModel.scannedParticipantAndUnusedBadges = nil
+                            viewModel.validatedKento = false
+                            viewModel.alreadyValidatedKento = false
+                            viewModel.notFoundKento = false
+                            viewModel.isPresentingList = true
                         } label : {
                             Label("List", systemImage: "list.dash")
                                 .font(.title2)
@@ -200,140 +324,13 @@ struct QRScanView: View {
                 
             }
         }
+        .onAppear {
+            viewModel.setupView(token: loginInfo.token, participantBadgeList: scanInfo.participantsAndBadges!)
+        }
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         .background(Color("KentoBeige").edgesIgnoringSafeArea(.all))
-        
     }
     
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        successScan = false
-        failScan = false
-        isPresentingScanner = false
-        
-        switch result {
-        case .success(let result):
-            self.scannedUserId = result.string
-            scanWallet(userId: scannedUserId!, scanTerminalId: scanInfo.scanTerminal!.id) { result in
-                switch result {
-                case .success(_):
-                    successScan = true
-                    failScan = false
-                case .failure(_):
-                    successScan = false
-                    failScan = true
-                }
-            }
-        case .failure(let error):
-            print("Scanning failed: \(error.localizedDescription)")
-        }
-    }
-    
-    func scanWallet(userId: String, scanTerminalId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        enum JSONDecodingError: Error {
-            case failed
-        }
-        
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/ScanWallet"
-        let parameters = [
-          [
-            "key": "UserId",
-            "value": userId,
-            "type": "text"
-          ],
-          [
-            "key": "ScanTerminalId",
-            "value": scanTerminalId,
-            "type": "text"
-          ]] as [[String : Any]]
-        let request = multipartRequest(urlString: urlString, parameters: parameters, token: loginInfo.token)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if error == nil {
-                guard
-                    let dataString = String(data: data!, encoding: .utf8),
-                    let scanWalletResult = try? JSONDecoder().decode(ScanWalletResult.self, from: data!)
-                else {
-                    print(response.debugDescription)
-                    completion(.failure(JSONDecodingError.failed))
-                    return
-                }
-                DispatchQueue.main.async {
-                    print(dataString)
-                    if scanWalletResult.response?.badgeEntities! != nil {
-                        badgeEntities = scanWalletResult.response?.badgeEntities!
-                    } else {
-                        print("Badge entities empty")
-                    }
-                }
-                completion(.success(true))
-            } else {
-                if let error = error {
-                    completion(.failure(error))
-                }
-            }
-            
-        }.resume()
-        
-    }
-    
-    func checkParticipantByName(firstName: String, lastName: String, scanTerminal: String, scanLocation: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        enum JSONDecodingError: Error {
-            case failed
-        }
-        
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/ScanWallet"
-        let parameters = [
-          [
-            "key": "firstName",
-            "value": firstName,
-            "type": "text"
-          ],
-          [
-            "key": "lastName",
-            "value": lastName,
-            "type": "text"
-          ],
-          [
-            "key": "scanTerminal",
-            "value": scanTerminal,
-            "type": "text"
-          ],
-          [
-            "key": "scanLocation",
-            "value": scanLocation,
-            "type": "text"
-          ]
-        ] as [[String : Any]]
-        let request = multipartRequest(urlString: urlString, parameters: parameters, token: loginInfo.token)
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if error == nil {
-                guard
-                    let dataString = String(data: data!, encoding: .utf8),
-                    let result = try? JSONDecoder().decode(CheckByNameResult.self, from: data!)
-                else {
-                    print("error")
-                    print(response.debugDescription)
-                    completion(.failure(JSONDecodingError.failed))
-                    return
-                }
-                DispatchQueue.main.async {
-                    print("dispatch")
-                    print(dataString)
-                    badgeEntityIds = result.response!.badgeEntityIds
-                    if result.response!.debug != nil {
-                        debug = result.response!.debug!
-                    }
-                }
-                print("success")
-                completion(.success(true))
-            } else {
-                if let error = error {
-                    completion(.failure(error))
-                }
-            }
-            
-        }.resume()
-        
-    }
         
 }
 
