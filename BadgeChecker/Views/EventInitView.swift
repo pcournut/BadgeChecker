@@ -68,24 +68,26 @@ struct EventInitView: View {
                                         .foregroundColor(Color("KentoBlueGrey"))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                Image(systemName: "xmark")
-                                    .foregroundColor(Color("KentoRedFont"))
-                                    .font(.system(size: 20))
-                                    .padding(10)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                                    .onTapGesture {
-                                        viewModel.title = "organisation"
-                                        viewModel.selectedOrg = nil
-                                        viewModel.selectedEvent = nil
-                                        viewModel.selectedBadges = []
-                                        viewModel.selectedBadgesIds = []
-                                        viewModel.orgs = nil
-                                        viewModel.events = nil
-                                        viewModel.badges = nil
-                                    }
-                                
+                                if viewModel.orgs != nil {
+                                    Image(systemName: "xmark")
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .font(.system(size: 20))
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .onTapGesture {
+                                            viewModel.title = "organisation"
+                                            viewModel.selectedOrg = nil
+                                            viewModel.selectedEvent = nil
+                                            viewModel.selectedBadges = []
+                                            viewModel.selectedBadgesIds = []
+                                            viewModel.orgs = nil
+                                            viewModel.events = nil
+                                            viewModel.badges = nil
+                                        }
+                                }
                             }
                             .frame(maxWidth: 350)
+                            .padding(5)
+                            
                         } else if viewModel.orgs != nil && viewModel.orgs!.count == 0 {
                             HStack{
                                 Text("No organisation were found associated to your profile.")
@@ -94,6 +96,7 @@ struct EventInitView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .frame(width: 350)
+                            .padding(5)
                         }
                         
                         if viewModel.selectedEvent != nil {
@@ -109,21 +112,23 @@ struct EventInitView: View {
                                         .foregroundColor(Color("KentoBlueGrey"))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                Image(systemName: "xmark")
-                                    .foregroundColor(Color("KentoRedFont"))
-                                    .font(.system(size: 20))
-                                    .padding(10)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                                    .onTapGesture {
-                                        viewModel.title = "event"
-                                        viewModel.selectedEvent = nil
-                                        viewModel.selectedBadges = []
-                                        viewModel.selectedBadgesIds = []
-                                        viewModel.badges = nil
-                                    }
-                                
+                                if viewModel.events != nil {
+                                    Image(systemName: "xmark")
+                                        .foregroundColor(Color("KentoRedFont"))
+                                        .font(.system(size: 20))
+                                        .frame(maxWidth: .infinity, alignment: .trailing)
+                                        .onTapGesture {
+                                            viewModel.title = "event"
+                                            viewModel.selectedEvent = nil
+                                            viewModel.selectedBadges = []
+                                            viewModel.selectedBadgesIds = []
+                                            viewModel.badges = nil
+                                        }
+                                }
                             }
-                            .frame(maxWidth: 350)
+                            .frame(width: 350)
+                            .padding(5)
+                            
                         } else if viewModel.events != nil && viewModel.events!.count == 0 {
                             HStack{
                                 Text("No future event was found associated to this organisation.")
@@ -132,6 +137,7 @@ struct EventInitView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .frame(width: 350)
+                            .padding(5)
                         }
                         
                         if viewModel.badges != nil {
@@ -147,12 +153,6 @@ struct EventInitView: View {
                                             .font(.title3)
                                             .foregroundColor(Color("KentoRedFont"))
                                             .frame(maxWidth: .infinity, alignment: .leading)
-                                        if viewModel.selectedBadges.count == 0 {
-                                            Text("Select at least one badge to Scan.")
-                                                .font(.title3)
-                                                .foregroundColor(Color("KentoBlueGrey"))
-                                                .frame(maxWidth: .infinity, alignment: .leading)
-                                        }
                                     }
                                 }
                             }
@@ -164,9 +164,9 @@ struct EventInitView: View {
                     // Selection stack
                     VStack {
                         
+                        // Select organisation
                         if viewModel.selectedOrg == nil {
-                            if viewModel.selectedOrg != nil {
-                                // Select organisation
+                            if viewModel.orgs != nil {
                                 if viewModel.orgs!.count > 1 {
                                     ForEach(viewModel.orgs!, id: \.id) { org in
                                         Button("\(org.name)"){
@@ -205,10 +205,6 @@ struct EventInitView: View {
                                             viewModel.eventInit(eventId: event.id) { result in
                                                 switch result {
                                                 case .success(_):
-                                                    DispatchQueue.main.async {
-                                                        scanInfo.scanTerminal = viewModel.scanTerminal
-                                                        print("Scan terminal setup: \(viewModel.scanTerminal)")
-                                                    }
                                                     return
                                                 case .failure(let error):
                                                     print("error: \(error)")
@@ -251,6 +247,7 @@ struct EventInitView: View {
                                         viewModel.selectedBadge(badgeIds: viewModel.selectedBadgesIds) { result in
                                             switch result {
                                             case .success(_):
+                                                scanInfo.scanTerminal = viewModel.scanTerminal
                                                 if viewModel.participantsAndBadges.count > 0 {
                                                     scanInfo.badges = viewModel.selectedBadges
                                                     scanInfo.participantsAndBadges = viewModel.participantsAndBadges

@@ -11,6 +11,7 @@ struct ParticipantScanInfo: Codable {
     var userId: String
     var firstName: String
     var lastName: String
+    var email: String
     var badgeEntityId: String
     var badgeId: String
     var isUsed: Bool
@@ -265,6 +266,7 @@ class EventInitViewModel: ObservableObject {
                             userId: participantDict!["userId"] as! String,
                             firstName: participantDict!["firstName"] as! String,
                             lastName: participantDict!["lastName"] as! String,
+                            email: participantDict!["email"] as! String,
                             badgeEntityId: participantDict!["badgeEntityId"] as! String,
                             badgeId: participantDict!["badgeId"] as! String,
                             isUsed: participantDict!["isUsed"] as! String == "oui")

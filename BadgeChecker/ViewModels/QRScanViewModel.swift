@@ -18,6 +18,7 @@ struct ParticipantAllBadges: Codable {
     var userId: String
     var firstName: String
     var lastName: String
+    var email: String
     var badges: [BadgeInfo]
 }
 
@@ -41,7 +42,7 @@ class QRScanViewModel: ObservableObject {
     // Environment variables
     @Published var token: String = ""
     @Published var scanTerminal: String = ""
-    @Published var badges: [String] = []
+    @Published var badges: [Badge] = []
     
     // Scanning variables
     
@@ -55,6 +56,8 @@ class QRScanViewModel: ObservableObject {
     // Scan variables
     @Published var scannedFirstName: String = ""
     @Published var scannedLastName: String = ""
+    @Published var scannedEmail: String = ""
+    @Published var scannedBadgeName: String = ""
     @Published var scannedParticipantAndUnusedBadges: ParticipantAllBadges?
     @Published var selectedBadgeEntitiesIds: [String] = []
     
@@ -80,7 +83,7 @@ class QRScanViewModel: ObservableObject {
         // Retrieve environment variables
         self.token = token
         self.scanTerminal = scanTerminal
-        self.badges = badges.flatMap( {$0.id} )
+        self.badges = badges
         self.lastQueryUnixTimeStamp = NSDate().timeIntervalSince1970 * 1000
 
         // Rearrange list of participants and badges
@@ -103,6 +106,7 @@ class QRScanViewModel: ObservableObject {
                     userId: participantBadge.userId,
                     firstName: participantBadge.firstName,
                     lastName: participantBadge.lastName,
+                    email: participantBadge.email,
                     badges: [BadgeInfo(
                         badgeEntityId: participantBadge.badgeEntityId,
                         badgeId: participantBadge.badgeId,
@@ -117,6 +121,8 @@ class QRScanViewModel: ObservableObject {
     func setupScanView() {
         self.scannedFirstName = ""
         self.scannedLastName = ""
+        self.scannedEmail = ""
+        self.scannedBadgeName = ""
         self.scanFailed = false
         self.isPresentingScanner = true
         self.isPresentingList = false
@@ -131,6 +137,8 @@ class QRScanViewModel: ObservableObject {
         self.filteredParticipantAllBadgesList = self.participantAllBadgesList
         self.scannedFirstName = ""
         self.scannedLastName = ""
+        self.scannedEmail = ""
+        self.scannedBadgeName = ""
         self.scanFailed = false
         self.isPresentingScanner = false
         self.scannedParticipantAndUnusedBadges = nil
@@ -140,19 +148,30 @@ class QRScanViewModel: ObservableObject {
         self.isPresentingList = true
     }
     
+    func updateFilteredParticipantAllBadgesList() {
+        if self.name.count > 0 {
+            self.filteredParticipantAllBadgesList = self.participantAllBadgesList.filter { $0.firstName.contains(self.name) || $0.lastName.contains(self.name) }
+        } else {
+            self.filteredParticipantAllBadgesList = self.participantAllBadgesList
+        }
+    }
+    
     func selectParticipant(participant: inout ParticipantAllBadges) {
         self.isPresentingList = false
         let scannedUnusedBadges = participant.badges.filter { !$0.isUsed }
         self.scannedFirstName = participant.firstName
         self.scannedLastName = participant.lastName
+        self.scannedEmail = participant.email
         if scannedUnusedBadges.count == 0 {
             self.alreadyValidatedKento = true
         } else if scannedUnusedBadges.count == 1 {
-            self.scannedFirstName = participant.firstName
-            self.scannedLastName = participant.lastName
             if let participantRow = self.participantAllBadgesList.firstIndex(where: {$0.userId == participant.userId}) {
                 if let badgeRow = participant.badges.firstIndex(where: {!$0.isUsed}) {
                     // Participant in argument can be a filtered array but changed on isUsed must be done on true record
+                    let badgeId = self.participantAllBadgesList[participantRow].badges[badgeRow].badgeId
+                    if let badgeRow = self.badges.firstIndex(where: {$0.id == badgeId}) {
+                        self.scannedBadgeName = self.badges[badgeRow].name
+                    }
                     self.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
                     self.changedBadgeEntities.append(participantAllBadgesList[participantRow].badges[badgeRow].badgeEntityId)
                     self.changedBadgeEntities.append(participant.badges[badgeRow].badgeEntityId)
@@ -161,12 +180,11 @@ class QRScanViewModel: ObservableObject {
             self.validatedBadgesCount += 1
             self.validatedKento = true
         } else {
-            self.scannedFirstName = participant.firstName
-            self.scannedLastName = participant.lastName
             self.scannedParticipantAndUnusedBadges = ParticipantAllBadges(
                 userId: participant.userId,
                 firstName: participant.firstName,
                 lastName: participant.lastName,
+                email: participant.email,
                 badges: scannedUnusedBadges
             )
         }
@@ -242,6 +260,7 @@ class QRScanViewModel: ObservableObject {
                             userId: participantDict!["userId"] as! String,
                             firstName: participantDict!["firstName"] as! String,
                             lastName: participantDict!["lastName"] as! String,
+                            email: participantDict!["email"] as! String,
                             badgeEntityId: participantDict!["badgeEntityId"] as! String,
                             badgeId: participantDict!["badgeId"] as! String,
                             isUsed: participantDict!["isUsed"] as! String == "oui")
@@ -256,6 +275,7 @@ class QRScanViewModel: ObservableObject {
                             }
                         }
                     }
+                    self.updateFilteredParticipantAllBadgesList()
                     self.lastQueryUnixTimeStamp = participantListUpdateResult.response.lastQueryUnixTimeStamp + 0.001
                     self.changedBadgeEntities = []
                     

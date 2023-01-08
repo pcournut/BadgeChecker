@@ -56,7 +56,7 @@ struct QRScanView: View {
                         viewModel.participantListUpdate(
                             changedBadgeEntities: viewModel.changedBadgeEntities,
                             scanTerminal: viewModel.scanTerminal,
-                            badges: viewModel.badges,
+                            badges: viewModel.badges.flatMap( {$0.id} ),
                             lastQueryUnixTimeStamp: viewModel.lastQueryUnixTimeStamp) { result in
                             switch result {
                             case .success(_):
@@ -93,7 +93,21 @@ struct QRScanView: View {
                     if viewModel.scannedFirstName.count > 0  && viewModel.scannedLastName.count > 0 {
                         Text("\(viewModel.scannedFirstName), \(viewModel.scannedLastName)")
                             .foregroundColor(Color("KentoBlueGrey"))
-                            .font(.title3)
+                            .font(.title2)
+                            .frame(minWidth: 0, maxWidth: 350, alignment: .leading)
+                            .padding(5)
+                    }
+                    if viewModel.scannedEmail.count > 0 {
+                        Text("\(viewModel.scannedEmail)")
+                            .foregroundColor(Color("KentoBlueGrey"))
+                            .font(.callout)
+                            .frame(minWidth: 0, maxWidth: 350, alignment: .leading)
+                            .padding(2)
+                    }
+                    if viewModel.scannedBadgeName.count > 0 {
+                        Text("\(viewModel.scannedBadgeName)")
+                            .foregroundColor(Color("KentoBlueGrey"))
+                            .font(.callout)
                             .frame(minWidth: 0, maxWidth: 350, alignment: .leading)
                     }
                     
@@ -169,11 +183,7 @@ struct QRScanView: View {
                     if viewModel.isPresentingList {
                         TextField("Search participants", text: $viewModel.name)
                             .onChange(of: viewModel.name) { newValue in
-                                if viewModel.name.count > 0 {
-                                    viewModel.filteredParticipantAllBadgesList = viewModel.participantAllBadgesList.filter { $0.firstName.contains(viewModel.name) || $0.lastName.contains(viewModel.name) }
-                                } else {
-                                    viewModel.filteredParticipantAllBadgesList = viewModel.participantAllBadgesList
-                                }
+                                viewModel.updateFilteredParticipantAllBadgesList()
                             }
                             .disableAutocorrection(true)
                             .foregroundColor(Color("KentoBeige"))
