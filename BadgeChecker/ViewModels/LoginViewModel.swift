@@ -7,36 +7,6 @@
 
 import Foundation
 
-class LoginInfo: ObservableObject {
-    @Published var userFirstName: String = UserDefaults.standard.string(forKey: "userFirstName") ?? ""
-    @Published var token: String = UserDefaults.standard.string(forKey: "token") ?? ""
-    @Published var user_id: String = UserDefaults.standard.string(forKey: "user_id") ?? ""
-    @Published var expires: Date = UserDefaults.standard.object(forKey: "expires") as? Date ?? Date.now
-}
-
-struct SendResult: Codable {
-    var status: String?
-    var statusCode: String?
-}
-
-struct VerifyResponse: Codable {
-    var userFirstName: String
-    var token: String
-    var user_id: String
-    var expires: Int
-}
-
-struct VerifyResult: Codable {
-    var status: String?
-    var statusCode: String?
-    var response: VerifyResponse?
-}
-
-struct NotTwilioResult: Codable {
-    var status: String?
-    var statusCode: String?
-    var response: VerifyResponse?
-}
 
 class LoginViewModel: ObservableObject {
     
@@ -48,6 +18,8 @@ class LoginViewModel: ObservableObject {
     @Published var isShowingCode: Bool = false
     @Published var isShowingEventInitView: Bool = false
     @Published var isShowingAlert: Bool = false
+    @Published var isShowingWaitingView: Bool = false
+    @Published var mainViewOpacity = 1.0
     
     func sendCode(phoneCountryCode: String, phoneNumber: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         enum JSONDecodingError: Error {

@@ -8,34 +8,6 @@
 import Foundation
 import CodeScanner
 
-struct BadgeInfo: Codable {
-    var badgeEntityId: String
-    var badgeId: String
-    var isUsed: Bool
-}
-
-struct ParticipantAllBadges: Codable {
-    var userId: String
-    var firstName: String
-    var lastName: String
-    var email: String
-    var badges: [BadgeInfo]
-}
-
-struct ParticipantListUpdateResponse: Codable {
-    var participantsUpdate: [String]
-    var lastQueryUnixTimeStamp: Double
-    
-    private enum CodingKeys: String, CodingKey {
-        case participantsUpdate
-        case lastQueryUnixTimeStamp = "LastQueryUnixTimeStamp"
-    }
-}
-
-struct ParticipantListUpdateResult: Codable {
-    var status: String
-    var response: ParticipantListUpdateResponse
-}
 
 class QRScanViewModel: ObservableObject {
     
@@ -44,25 +16,22 @@ class QRScanViewModel: ObservableObject {
     @Published var scanTerminal: String = ""
     @Published var badges: [Badge] = []
     
-    // Scanning variables
-    
+    // Local scan variables
     @Published var badgesCount = 0
     @Published var validatedBadgesCount = 0
     @Published var participantAllBadgesList: [ParticipantAllBadges] = []
     
     // Search variables
+    @Published var searchText: String = ""
     @Published var filteredParticipantAllBadgesList: [ParticipantAllBadges] = []
     
-    // Scan variables
+    // Scanned variables
     @Published var scannedFirstName: String = ""
     @Published var scannedLastName: String = ""
     @Published var scannedEmail: String = ""
     @Published var scannedBadgeName: String = ""
-    @Published var scannedParticipantAndUnusedBadges: ParticipantAllBadges?
+    @Published var scannedParticipantAndBadges: ParticipantAllBadges?
     @Published var selectedBadgeEntitiesIds: [String] = []
-    
-    // List search
-    @Published var name: String = ""
     
     // Iconography variables
     @Published var notFoundKento = false
@@ -76,10 +45,13 @@ class QRScanViewModel: ObservableObject {
     @Published var lastQueryUnixTimeStamp: Double = 0
     
     // View variables
-    @Published var isPresentingScanner = false
+    @Published var isPresentingScanner = true
+    // TODO: remove at release?
+    @Published var isPresentingPhotoGallery = false
     @Published var isPresentingList = false
+    @Published var isPresentingResultStack = false
     
-    func setupScanningVariables(token: String, scanTerminal: String, badges: [Badge], participantBadgeList: [ParticipantScanInfo]) {
+    func setupScanningVariables(token: String, scanTerminal: String, badges: [Badge], enrichedBadgeEntities: [EnrichedBadgeEntity]) {
         // Retrieve environment variables
         self.token = token
         self.scanTerminal = scanTerminal
@@ -87,30 +59,30 @@ class QRScanViewModel: ObservableObject {
         self.lastQueryUnixTimeStamp = NSDate().timeIntervalSince1970 * 1000
 
         // Rearrange list of participants and badges
-        badgesCount = participantBadgeList.count
+        badgesCount = enrichedBadgeEntities.count
         self.participantAllBadgesList = []
-        for participantBadge in participantBadgeList {
-            if participantBadge.isUsed {
+        for enrichedBadgeEntity in enrichedBadgeEntities {
+            if enrichedBadgeEntity.isUsed {
                 validatedBadgesCount += 1
             }
             
-            if self.participantAllBadgesList.filter({ $0.userId == participantBadge.userId }).count > 0 {
-                if let row = self.participantAllBadgesList.firstIndex(where: {$0.userId == participantBadge.userId}) {
+            if self.participantAllBadgesList.filter({ $0.userId == enrichedBadgeEntity.userId }).count > 0 {
+                if let row = self.participantAllBadgesList.firstIndex(where: {$0.userId == enrichedBadgeEntity.userId}) {
                     self.participantAllBadgesList[row].badges.append(BadgeInfo(
-                        badgeEntityId: participantBadge.badgeEntityId,
-                        badgeId: participantBadge.badgeId,
-                        isUsed: participantBadge.isUsed))
+                        badgeEntityId: enrichedBadgeEntity.badgeEntityId,
+                        badgeId: enrichedBadgeEntity.badgeId,
+                        isUsed: enrichedBadgeEntity.isUsed))
                 }
             } else {
                 self.participantAllBadgesList.append(ParticipantAllBadges(
-                    userId: participantBadge.userId,
-                    firstName: participantBadge.firstName,
-                    lastName: participantBadge.lastName,
-                    email: participantBadge.email,
+                    userId: enrichedBadgeEntity.userId,
+                    firstName: enrichedBadgeEntity.firstName,
+                    lastName: enrichedBadgeEntity.lastName,
+                    email: enrichedBadgeEntity.email,
                     badges: [BadgeInfo(
-                        badgeEntityId: participantBadge.badgeEntityId,
-                        badgeId: participantBadge.badgeId,
-                        isUsed: participantBadge.isUsed)]
+                        badgeEntityId: enrichedBadgeEntity.badgeEntityId,
+                        badgeId: enrichedBadgeEntity.badgeId,
+                        isUsed: enrichedBadgeEntity.isUsed)]
                     )
                 )
             }
@@ -118,80 +90,95 @@ class QRScanViewModel: ObservableObject {
         self.filteredParticipantAllBadgesList = self.participantAllBadgesList
     }
     
-    func setupScanView() {
+    func resetScannedAndInfographyVariables() {
         self.scannedFirstName = ""
         self.scannedLastName = ""
         self.scannedEmail = ""
         self.scannedBadgeName = ""
+        self.notFoundKento = false
+        self.alreadyValidatedKento = false
+        self.validatedKento = false
         self.scanFailed = false
+        self.scannedParticipantAndBadges = nil
+        self.selectedBadgeEntitiesIds = []
+    }
+    
+    func dismissResultStack() {
+        resetScannedAndInfographyVariables()
+        self.isPresentingResultStack = false
+    }
+    
+    func setupScanView() {
+        resetScannedAndInfographyVariables()
         self.isPresentingScanner = true
         self.isPresentingList = false
-        self.scannedParticipantAndUnusedBadges = nil
-        self.validatedKento = false
-        self.alreadyValidatedKento = false
-        self.notFoundKento = false
     }
     
     func setupListView() {
-        self.name = ""
-        self.filteredParticipantAllBadgesList = self.participantAllBadgesList
-        self.scannedFirstName = ""
-        self.scannedLastName = ""
-        self.scannedEmail = ""
-        self.scannedBadgeName = ""
-        self.scanFailed = false
+        resetScannedAndInfographyVariables()
         self.isPresentingScanner = false
-        self.scannedParticipantAndUnusedBadges = nil
-        self.validatedKento = false
-        self.alreadyValidatedKento = false
-        self.notFoundKento = false
         self.isPresentingList = true
+        self.searchText = ""
+        self.filteredParticipantAllBadgesList = self.participantAllBadgesList
+    }
+    
+    func standardizeString(str: String) -> String {
+        return str.lowercased().folding(options: .diacriticInsensitive, locale: .current)
     }
     
     func updateFilteredParticipantAllBadgesList() {
-        if self.name.count > 0 {
-            self.filteredParticipantAllBadgesList = self.participantAllBadgesList.filter { $0.firstName.contains(self.name) || $0.lastName.contains(self.name) }
+        if self.searchText.count > 0 {
+            self.filteredParticipantAllBadgesList = self.participantAllBadgesList.filter { standardizeString(str: $0.firstName).contains(standardizeString(str: self.searchText)) || standardizeString(str: $0.lastName).contains(standardizeString(str: self.searchText)) || standardizeString(str: $0.email).contains(standardizeString(str: self.searchText)) }
         } else {
             self.filteredParticipantAllBadgesList = self.participantAllBadgesList
+        }
+        
+        validatedBadgesCount = 0
+        for participantAllBadge in participantAllBadgesList {
+            for badge in participantAllBadge.badges {
+                if badge.isUsed {
+                    validatedBadgesCount += 1
+                }
+            }
         }
     }
     
     func selectParticipant(participant: inout ParticipantAllBadges) {
-        self.isPresentingList = false
-        let scannedUnusedBadges = participant.badges.filter { !$0.isUsed }
+        self.isPresentingResultStack = true
         self.scannedFirstName = participant.firstName
         self.scannedLastName = participant.lastName
         self.scannedEmail = participant.email
-        if scannedUnusedBadges.count == 0 {
-            self.alreadyValidatedKento = true
-        } else if scannedUnusedBadges.count == 1 {
-            if let participantRow = self.participantAllBadgesList.firstIndex(where: {$0.userId == participant.userId}) {
-                if let badgeRow = participant.badges.firstIndex(where: {!$0.isUsed}) {
-                    // Participant in argument can be a filtered array but changed on isUsed must be done on true record
-                    let badgeId = self.participantAllBadgesList[participantRow].badges[badgeRow].badgeId
-                    if let badgeRow = self.badges.firstIndex(where: {$0.id == badgeId}) {
-                        self.scannedBadgeName = self.badges[badgeRow].name
-                    }
-                    self.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
-                    self.changedBadgeEntities.append(participantAllBadgesList[participantRow].badges[badgeRow].badgeEntityId)
-                    self.changedBadgeEntities.append(participant.badges[badgeRow].badgeEntityId)
-                }
+        self.scannedParticipantAndBadges = ParticipantAllBadges(
+            userId: participant.userId,
+            firstName: participant.firstName,
+            lastName: participant.lastName,
+            email: participant.email,
+            badges: participant.badges
+        )
+        if participant.badges.filter( {!$0.isUsed} ).count == 1 {
+            if let badgeRow = participant.badges.firstIndex(where: {!$0.isUsed}) {
+                self.selectedBadgeEntitiesIds.append(participant.badges[badgeRow].badgeEntityId)
             }
-            self.validatedBadgesCount += 1
-            self.validatedKento = true
-        } else {
-            self.scannedParticipantAndUnusedBadges = ParticipantAllBadges(
-                userId: participant.userId,
-                firstName: participant.firstName,
-                lastName: participant.lastName,
-                email: participant.email,
-                badges: scannedUnusedBadges
-            )
         }
     }
     
+    func validateSelection() {
+        for badgeEntityId in self.selectedBadgeEntitiesIds {
+            if let participantRow = self.participantAllBadgesList.firstIndex(where: {$0.userId == self.scannedParticipantAndBadges!.userId}) {
+                if let badgeRow = self.participantAllBadgesList[participantRow].badges.firstIndex(where: {$0.badgeEntityId == badgeEntityId}) {
+                    self.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
+                    self.changedBadgeEntities.append(self.participantAllBadgesList[participantRow].badges[badgeRow].badgeEntityId)
+                }
+            }
+        }
+        self.validatedBadgesCount += self.selectedBadgeEntitiesIds.count
+        self.isPresentingResultStack = false
+        self.validatedKento = false
+        self.scannedParticipantAndBadges = nil
+        self.updateFilteredParticipantAllBadgesList()
+    }
+    
     func handleScan(result: Result<ScanResult, ScanError>) {
-        self.isPresentingScanner = false
         
         switch result {
         case .success(let result):
@@ -201,10 +188,12 @@ class QRScanViewModel: ObservableObject {
                 selectParticipant(participant: &scannedParticipantAllBadges[0])
             } else {
                 self.notFoundKento = true
+                self.isPresentingResultStack = true
             }
 
         case .failure(let error):
             self.scanFailed = true
+            self.isPresentingResultStack = true
             print("Scanning failed: \(error.localizedDescription)")
         }
     }
@@ -253,23 +242,22 @@ class QRScanViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     // Debug
-                    print("\(dataString)")
-                    for participant in participantListUpdateResult.response.participantsUpdate {
-                        let participantDict = convertStringToDictionary(text: participant)
-                        let participantScanInfo = ParticipantScanInfo(
-                            userId: participantDict!["userId"] as! String,
-                            firstName: participantDict!["firstName"] as! String,
-                            lastName: participantDict!["lastName"] as! String,
-                            email: participantDict!["email"] as! String,
-                            badgeEntityId: participantDict!["badgeEntityId"] as! String,
-                            badgeId: participantDict!["badgeId"] as! String,
-                            isUsed: participantDict!["isUsed"] as! String == "oui")
-                        if participantScanInfo.isUsed {
-                            if let participantRow = self.participantAllBadgesList.firstIndex(where: {$0.userId == participantScanInfo.userId}) {
-                                if let badgeRow = self.participantAllBadgesList[participantRow].badges.firstIndex(where: { $0.badgeEntityId == participantScanInfo.badgeEntityId}) {
+                    print("dataString: \(dataString)")
+                    for badgeEntity in participantListUpdateResult.response.participantsUpdate {
+                        let badgeEntityDict = convertStringToDictionary(text: badgeEntity)
+                        let enrichedBadgeEntity = EnrichedBadgeEntity(
+                            userId: badgeEntityDict!["userId"] as! String,
+                            firstName: badgeEntityDict!["firstName"] as! String,
+                            lastName: badgeEntityDict!["lastName"] as! String,
+                            email: badgeEntityDict!["email"] as! String,
+                            badgeEntityId: badgeEntityDict!["badgeEntityId"] as! String,
+                            badgeId: badgeEntityDict!["badgeId"] as! String,
+                            isUsed: badgeEntityDict!["isUsed"] as! String == "oui")
+                        if enrichedBadgeEntity.isUsed {
+                            if let participantRow = self.participantAllBadgesList.firstIndex(where: {$0.userId == enrichedBadgeEntity.userId}) {
+                                if let badgeRow = self.participantAllBadgesList[participantRow].badges.firstIndex(where: { $0.badgeEntityId == enrichedBadgeEntity.badgeEntityId}) {
                                     if !self.participantAllBadgesList[participantRow].badges[badgeRow].isUsed {
                                         self.participantAllBadgesList[participantRow].badges[badgeRow].isUsed = true
-                                        self.validatedBadgesCount += 1
                                     }
                                 }
                             }

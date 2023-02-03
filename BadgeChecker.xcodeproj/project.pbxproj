@@ -10,16 +10,21 @@
 		460166292946778500E82163 /* EventInitViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460166282946778500E82163 /* EventInitViewModel.swift */; };
 		4601662B29467EE600E82163 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4601662A29467EE600E82163 /* LoginViewModel.swift */; };
 		4601662D294682D300E82163 /* QRScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4601662C294682D300E82163 /* QRScanViewModel.swift */; };
+		461823442976E67A00D88C8C /* iActivityIndicator in Frameworks */ = {isa = PBXBuildFile; productRef = 461823432976E67A00D88C8C /* iActivityIndicator */; };
+		461823462976E69300D88C8C /* WaitingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461823452976E69300D88C8C /* WaitingView.swift */; };
 		463CFB5F27F998730032C8E7 /* BadgeCheckerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */; };
 		463CFB6327F998740032C8E7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 463CFB6227F998740032C8E7 /* Assets.xcassets */; };
 		463CFB6627F998740032C8E7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 463CFB6527F998740032C8E7 /* Preview Assets.xcassets */; };
 		463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 463CFB6D27F99D8D0032C8E7 /* CodeScanner */; };
+		466201FB296D822F00C36DB7 /* SVGView in Frameworks */ = {isa = PBXBuildFile; productRef = 466201FA296D822F00C36DB7 /* SVGView */; };
+		46620200296D916900C36DB7 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 466201FF296D916900C36DB7 /* FileDownloader.swift */; };
+		46620203296FE91500C36DB7 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46620202296FE91500C36DB7 /* Data.swift */; };
+		46620205296FEA8700C36DB7 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46620204296FEA8700C36DB7 /* Utils.swift */; };
 		4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */ = {isa = PBXBuildFile; productRef = 4699CE7029560BFF006A1D9D /* ShowTime */; };
 		46A175D42813EE21000E5812 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D32813EE21000E5812 /* LoginView.swift */; };
 		46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D62813EE7A000E5812 /* EventInitView.swift */; };
 		46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D82813EEA0000E5812 /* QRScanView.swift */; };
 		46A865BB281D10930075C38C /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A865BA281D10930075C38C /* Requests.swift */; };
-		46B0AD9B28D71FCA0001364F /* Popovers in Frameworks */ = {isa = PBXBuildFile; productRef = 46B0AD9A28D71FCA0001364F /* Popovers */; };
 		46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */ = {isa = PBXBuildFile; productRef = 46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */; };
 /* End PBXBuildFile section */
 
@@ -27,10 +32,14 @@
 		460166282946778500E82163 /* EventInitViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInitViewModel.swift; sourceTree = "<group>"; };
 		4601662A29467EE600E82163 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		4601662C294682D300E82163 /* QRScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanViewModel.swift; sourceTree = "<group>"; };
+		461823452976E69300D88C8C /* WaitingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaitingView.swift; sourceTree = "<group>"; };
 		463CFB5B27F998730032C8E7 /* BadgeChecker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BadgeChecker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeCheckerApp.swift; sourceTree = "<group>"; };
 		463CFB6227F998740032C8E7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		463CFB6527F998740032C8E7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		466201FF296D916900C36DB7 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
+		46620202296FE91500C36DB7 /* Data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Data.swift; sourceTree = "<group>"; };
+		46620204296FEA8700C36DB7 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		46A175D32813EE21000E5812 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		46A175D62813EE7A000E5812 /* EventInitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventInitView.swift; sourceTree = "<group>"; };
 		46A175D82813EEA0000E5812 /* QRScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanView.swift; sourceTree = "<group>"; };
@@ -43,8 +52,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */,
-				46B0AD9B28D71FCA0001364F /* Popovers in Frameworks */,
+				461823442976E67A00D88C8C /* iActivityIndicator in Frameworks */,
 				463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */,
+				466201FB296D822F00C36DB7 /* SVGView in Frameworks */,
 				46BB6BE828AA2AAB008D2952 /* iPhoneNumberField in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +94,8 @@
 				460166272946774A00E82163 /* ViewModels */,
 				46A865B9281D10800075C38C /* Services */,
 				46A175CF2813EDF6000E5812 /* Views */,
+				46620202296FE91500C36DB7 /* Data.swift */,
+				46620204296FEA8700C36DB7 /* Utils.swift */,
 				463CFB5E27F998730032C8E7 /* BadgeCheckerApp.swift */,
 				463CFB6227F998740032C8E7 /* Assets.xcassets */,
 				463CFB6427F998740032C8E7 /* Preview Content */,
@@ -103,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				46A175D62813EE7A000E5812 /* EventInitView.swift */,
+				461823452976E69300D88C8C /* WaitingView.swift */,
 				46A175D32813EE21000E5812 /* LoginView.swift */,
 				46A175D82813EEA0000E5812 /* QRScanView.swift */,
 			);
@@ -113,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				46A865BA281D10930075C38C /* Requests.swift */,
+				466201FF296D916900C36DB7 /* FileDownloader.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -136,8 +150,9 @@
 			packageProductDependencies = (
 				463CFB6D27F99D8D0032C8E7 /* CodeScanner */,
 				46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */,
-				46B0AD9A28D71FCA0001364F /* Popovers */,
 				4699CE7029560BFF006A1D9D /* ShowTime */,
+				466201FA296D822F00C36DB7 /* SVGView */,
+				461823432976E67A00D88C8C /* iActivityIndicator */,
 			);
 			productName = BadgeChecker;
 			productReference = 463CFB5B27F998730032C8E7 /* BadgeChecker.app */;
@@ -170,8 +185,9 @@
 			packageReferences = (
 				463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */,
-				46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */,
 				4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */,
+				466201F9296D822F00C36DB7 /* XCRemoteSwiftPackageReference "SVGView" */,
+				461823422976E67A00D88C8C /* XCRemoteSwiftPackageReference "iActivityIndicator" */,
 			);
 			productRefGroup = 463CFB5C27F998730032C8E7 /* Products */;
 			projectDirPath = "";
@@ -200,10 +216,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				46A175D42813EE21000E5812 /* LoginView.swift in Sources */,
+				46620203296FE91500C36DB7 /* Data.swift in Sources */,
+				461823462976E69300D88C8C /* WaitingView.swift in Sources */,
 				46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */,
 				463CFB5F27F998730032C8E7 /* BadgeCheckerApp.swift in Sources */,
 				46A865BB281D10930075C38C /* Requests.swift in Sources */,
+				46620200296D916900C36DB7 /* FileDownloader.swift in Sources */,
 				4601662D294682D300E82163 /* QRScanViewModel.swift in Sources */,
+				46620205296FEA8700C36DB7 /* Utils.swift in Sources */,
 				46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */,
 				460166292946778500E82163 /* EventInitViewModel.swift in Sources */,
 				4601662B29467EE600E82163 /* LoginViewModel.swift in Sources */,
@@ -264,7 +284,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -319,7 +339,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -335,7 +355,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"BadgeChecker/Preview Content\"";
 				DEVELOPMENT_TEAM = 2QADU262ML;
 				ENABLE_PREVIEWS = YES;
@@ -347,6 +367,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -366,7 +387,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"BadgeChecker/Preview Content\"";
 				DEVELOPMENT_TEAM = 2QADU262ML;
 				ENABLE_PREVIEWS = YES;
@@ -378,6 +399,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -415,12 +437,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		461823422976E67A00D88C8C /* XCRemoteSwiftPackageReference "iActivityIndicator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MojtabaHs/iActivityIndicator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.1;
+			};
+		};
 		463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/twostraws/CodeScanner";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
+			};
+		};
+		466201F9296D822F00C36DB7 /* XCRemoteSwiftPackageReference "SVGView" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/exyte/SVGView.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */ = {
@@ -431,39 +469,36 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/aheze/Popovers";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MojtabaHs/iPhoneNumberField.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.0;
+				kind = exactVersion;
+				version = 0.10.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		461823432976E67A00D88C8C /* iActivityIndicator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 461823422976E67A00D88C8C /* XCRemoteSwiftPackageReference "iActivityIndicator" */;
+			productName = iActivityIndicator;
+		};
 		463CFB6D27F99D8D0032C8E7 /* CodeScanner */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
 		};
+		466201FA296D822F00C36DB7 /* SVGView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 466201F9296D822F00C36DB7 /* XCRemoteSwiftPackageReference "SVGView" */;
+			productName = SVGView;
+		};
 		4699CE7029560BFF006A1D9D /* ShowTime */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */;
 			productName = ShowTime;
-		};
-		46B0AD9A28D71FCA0001364F /* Popovers */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 46B0AD9928D71FCA0001364F /* XCRemoteSwiftPackageReference "Popovers" */;
-			productName = Popovers;
 		};
 		46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */ = {
 			isa = XCSwiftPackageProductDependency;
