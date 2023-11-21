@@ -58,7 +58,7 @@ func getDataRequest(table: String, key: String, values: [String], cursor: Int, t
         }
     }
     
-    let urlString = "https://kento.events/version-test/api/1.1/obj/\(table)?api_token=\(token)&constraints=%5B%7B%20%22key%22%3A%20%22\(key)%22%2C%22constraint_type%22%3A%22in%22%2C%22value%22%3A%5B\(valuesString)%5D%7D%5D&cursor=\(cursor)"
+    let urlString = "\(Endpoints.dataEndpoint)/\(table)?api_token=\(token)&constraints=%5B%7B%20%22key%22%3A%20%22\(key)%22%2C%22constraint_type%22%3A%22in%22%2C%22value%22%3A%5B\(valuesString)%5D%7D%5D&cursor=\(cursor)"
     var request = URLRequest(url: URL(string: urlString)!, timeoutInterval: Double.infinity)
     request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "GET"

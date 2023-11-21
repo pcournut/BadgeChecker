@@ -32,7 +32,7 @@ class LoginViewModel: ObservableObject {
         
         // TODO: max attempt reached (more than 5 times) error
         
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessSendCode"
+        let urlString = "\(Endpoints.workflowEndpoint)/PasswordlessSendCode"
         let parameters = [
             ["key": "phoneCountryCode",
              "value": phoneCountryCode,
@@ -78,7 +78,7 @@ class LoginViewModel: ObservableObject {
             case failed
         }
         
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessVerifyCode"
+        let urlString = "\(Endpoints.workflowEndpoint)/PasswordlessVerifyCode"
         let parameters = [
             ["key": "phoneCountryCode",
              "value": phoneCountryCode,
@@ -132,7 +132,7 @@ class LoginViewModel: ObservableObject {
         
         // TODO: max attempt reached (more than 5 times) error
         
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/PasswordlessVerifyCodeNOTWILIO"
+        let urlString = "\(Endpoints.workflowEndpoint)/PasswordlessVerifyCodeNOTWILIO"
         let parameters = [
             ["key": "phoneCountryCode",
              "value": phoneCountryCode,

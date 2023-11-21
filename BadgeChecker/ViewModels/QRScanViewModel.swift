@@ -203,7 +203,7 @@ class QRScanViewModel: ObservableObject {
             case failed
         }
 
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/ParticipantListUpdate"
+        let urlString = "\(Endpoints.workflowEndpoint)/ParticipantListUpdate"
         let parameters = [
           [
             "key": "ChangedBadgeEntities",

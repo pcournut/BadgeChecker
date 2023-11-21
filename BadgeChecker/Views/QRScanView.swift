@@ -277,16 +277,14 @@ struct QRScanView: View {
                         .frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
                 }
                 
-                Divider().padding()
+                Divider().padding(.top)
                 
-                // Scanner stack
-                if viewModel.isPresentingScanner {
-                    self.scannerSheet
-                        .frame(minHeight: 0, maxHeight: .infinity, alignment: .top)
-                }
-                
-                // List selection stack
                 VStack {
+                    // Scanner stack
+                    if viewModel.isPresentingScanner {
+                            self.scannerSheet
+                    }
+                    // List selection stack
                     if viewModel.isPresentingList {
                         TextField("Search participants", text: $viewModel.searchText)
                             .onChange(of: viewModel.searchText) { newValue in
@@ -359,7 +357,7 @@ struct QRScanView: View {
                         .frame(width: geometry.size.width * 0.50, alignment: .center)
                     }
                 }
-                .frame(height: 40)
+                .frame(height: 50)
                 
             } // VStack
             .navigationBarTitle("")

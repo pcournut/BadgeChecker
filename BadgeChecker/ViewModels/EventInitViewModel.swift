@@ -68,7 +68,7 @@ class EventInitViewModel: ObservableObject {
             case failed
         }
     
-        let urlString = "https://club-soda-test-pierre.bubbleapps.io/version-test/api/1.1/wf/KentoEventInit"
+        let urlString = "\(Endpoints.workflowEndpoint)/KentoEventInit"
         var parameters = [] as [[String : Any]]
         if orgId != nil {
             parameters.append([

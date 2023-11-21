@@ -89,7 +89,7 @@ struct LoginView: View {
                             
                             iPhoneNumberField(
                                 text: $viewModel.phoneNumber,
-//                                isEditing: $isEditing,
+                                isEditing: $isEditing,
                                 formatted: true
                             )
                                 .flagHidden(false)

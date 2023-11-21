@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/twostraws/CodeScanner",
       "state" : {
-        "revision" : "c7859712034a08bb5a018fbe8751c1f1edc4b248",
-        "version" : "2.2.1"
+        "revision" : "88a61323cae0aa4e7056f122600e5d38fd305a77",
+        "version" : "2.3.0"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/MojtabaHs/iPhoneNumberField.git",
       "state" : {
-        "revision" : "08140a73b6923f07df313fbc71034c70d431a5c9",
-        "version" : "0.10.0"
+        "revision" : "5298972c899ba3555a77549bebeace2e16bc927d",
+        "version" : "0.10.1"
       }
     },
     {
@@ -32,17 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/marmelroy/PhoneNumberKit",
       "state" : {
-        "revision" : "104a53d62c55aa5794faf30b29ccad319653b552",
-        "version" : "3.4.5"
-      }
-    },
-    {
-      "identity" : "showtime",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/KaneCheshire/ShowTime.git",
-      "state" : {
-        "revision" : "f4e976931fc5f9b7a7d011f40c62a250c4ff53ab",
-        "version" : "2.5.3"
+        "revision" : "434a7432cceca19829bc6e34bdcfc0b0ee4c6801",
+        "version" : "3.5.7"
       }
     },
     {

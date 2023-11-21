@@ -20,7 +20,6 @@
 		46620200296D916900C36DB7 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 466201FF296D916900C36DB7 /* FileDownloader.swift */; };
 		46620203296FE91500C36DB7 /* Data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46620202296FE91500C36DB7 /* Data.swift */; };
 		46620205296FEA8700C36DB7 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46620204296FEA8700C36DB7 /* Utils.swift */; };
-		4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */ = {isa = PBXBuildFile; productRef = 4699CE7029560BFF006A1D9D /* ShowTime */; };
 		46A175D42813EE21000E5812 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D32813EE21000E5812 /* LoginView.swift */; };
 		46A175D72813EE7A000E5812 /* EventInitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D62813EE7A000E5812 /* EventInitView.swift */; };
 		46A175D92813EEA0000E5812 /* QRScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A175D82813EEA0000E5812 /* QRScanView.swift */; };
@@ -51,7 +50,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4699CE7129560BFF006A1D9D /* ShowTime in Frameworks */,
 				461823442976E67A00D88C8C /* iActivityIndicator in Frameworks */,
 				463CFB6E27F99D8D0032C8E7 /* CodeScanner in Frameworks */,
 				466201FB296D822F00C36DB7 /* SVGView in Frameworks */,
@@ -150,7 +148,6 @@
 			packageProductDependencies = (
 				463CFB6D27F99D8D0032C8E7 /* CodeScanner */,
 				46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */,
-				4699CE7029560BFF006A1D9D /* ShowTime */,
 				466201FA296D822F00C36DB7 /* SVGView */,
 				461823432976E67A00D88C8C /* iActivityIndicator */,
 			);
@@ -185,7 +182,6 @@
 			packageReferences = (
 				463CFB6C27F99D8D0032C8E7 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 				46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */,
-				4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */,
 				466201F9296D822F00C36DB7 /* XCRemoteSwiftPackageReference "SVGView" */,
 				461823422976E67A00D88C8C /* XCRemoteSwiftPackageReference "iActivityIndicator" */,
 			);
@@ -357,7 +353,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"BadgeChecker/Preview Content\"";
-				DEVELOPMENT_TEAM = 2QADU262ML;
+				DEVELOPMENT_TEAM = UPFCBCBSRY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need the camera to scan QR codes";
@@ -373,7 +369,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kento.BadgeChecker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kento.poc.badgeChecker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -389,7 +385,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"BadgeChecker/Preview Content\"";
-				DEVELOPMENT_TEAM = 2QADU262ML;
+				DEVELOPMENT_TEAM = UPFCBCBSRY;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need the camera to scan QR codes";
@@ -405,7 +401,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kento.BadgeChecker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kento.poc.badgeChecker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -461,20 +457,12 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/KaneCheshire/ShowTime.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
 		46BB6BE628AA2AAB008D2952 /* XCRemoteSwiftPackageReference "iPhoneNumberField" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/MojtabaHs/iPhoneNumberField.git";
 			requirement = {
 				kind = exactVersion;
-				version = 0.10.0;
+				version = 0.10.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -494,11 +482,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 466201F9296D822F00C36DB7 /* XCRemoteSwiftPackageReference "SVGView" */;
 			productName = SVGView;
-		};
-		4699CE7029560BFF006A1D9D /* ShowTime */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4699CE6F29560BFF006A1D9D /* XCRemoteSwiftPackageReference "ShowTime" */;
-			productName = ShowTime;
 		};
 		46BB6BE728AA2AAB008D2952 /* iPhoneNumberField */ = {
 			isa = XCSwiftPackageProductDependency;
